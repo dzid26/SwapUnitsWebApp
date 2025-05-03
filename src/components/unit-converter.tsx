@@ -52,7 +52,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function UnitConverter() {
+export const UnitConverter = React.memo(function UnitConverterComponent() {
   // State to track the *currently selected* category for logic purposes
   // This differs from form.watch("category") which reflects the form state immediately
   const [selectedCategory, setSelectedCategory] = React.useState<UnitCategory | "">("");
@@ -67,7 +67,7 @@ export function UnitConverter() {
     defaultValues: {
       category: "Mass", // Default category on load
       fromUnit: "kg",  // Default from unit (Kilogram for Mass)
-      toUnit: "mg",    // Default to unit (Milligram for Mass) - Updated as per user request
+      toUnit: "g",    // Default to unit (Gram for Mass) - Updated as per user request
       value: 1,        // Default value
     },
   });
@@ -78,10 +78,12 @@ export function UnitConverter() {
   const toUnitValue = watch("toUnit");
   const inputValue = watch("value"); // This can be string, number, or NaN during input
 
+  // Memoize the getUnits function
   const getUnitsForCategory = React.useCallback((category: UnitCategory | ""): Unit[] => {
     return category ? unitData[category as UnitCategory]?.units ?? [] : [];
   }, []); // Stable function based on imported data
 
+  // Memoize the conversion function
   const convertUnits = React.useCallback((data: Partial<FormData>): ConversionResult | null => {
     const { category, fromUnit, toUnit, value } = data;
     const numericValue = Number(value); // Attempt to convert input value to number
@@ -156,31 +158,31 @@ export function UnitConverter() {
                 break;
             case 'Mass':
                 defaultFromUnit = units.find(u => u.symbol === 'kg')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'g')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // Changed to grams
+                defaultToUnit = units.find(u => u.symbol === 'g')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // Set to grams
                 break;
             case 'Temperature':
                 defaultFromUnit = units.find(u => u.symbol === '°C')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === '°F')?.symbol ?? units[1]?.symbol ?? defaultFromUnit;
+                defaultToUnit = units.find(u => u.symbol === '°F')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // C to F
                 break;
             case 'Time':
                 defaultFromUnit = units.find(u => u.symbol === 's')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'ms')?.symbol ?? units[1]?.symbol ?? defaultFromUnit;
+                defaultToUnit = units.find(u => u.symbol === 'ms')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // s to ms
                 break;
             case 'Pressure':
                 defaultFromUnit = units.find(u => u.symbol === 'Pa')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'kPa')?.symbol ?? units[1]?.symbol ?? defaultFromUnit;
+                defaultToUnit = units.find(u => u.symbol === 'kPa')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // Pa to kPa
                 break;
             case 'Area':
                 defaultFromUnit = units.find(u => u.symbol === 'm²')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'ft²')?.symbol ?? units[1]?.symbol ?? defaultFromUnit;
+                defaultToUnit = units.find(u => u.symbol === 'ft²')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // m2 to ft2
                 break;
             case 'Volume':
                 defaultFromUnit = units.find(u => u.symbol === 'L')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'mL')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // Changed to mL for common use case
+                defaultToUnit = units.find(u => u.symbol === 'mL')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // L to mL
                 break;
             case 'Energy':
                 defaultFromUnit = units.find(u => u.symbol === 'J')?.symbol ?? units[0]?.symbol ?? "";
-                defaultToUnit = units.find(u => u.symbol === 'kJ')?.symbol ?? units[1]?.symbol ?? defaultFromUnit;
+                defaultToUnit = units.find(u => u.symbol === 'kJ')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // J to kJ
                 break;
             // No default case needed as fallbacks are handled above
         }
@@ -230,18 +232,29 @@ export function UnitConverter() {
    React.useEffect(() => {
      // Check if it's the very first load (selectedCategory is empty) and we have initial form values
      if (selectedCategory === "") {
-        const initialFormData = getValues();
+        const initialFormData = getValues(); // Get default values from useForm
         // Ensure all necessary initial values are present
         if(initialFormData.category && initialFormData.fromUnit && initialFormData.toUnit && initialFormData.value !== undefined ) {
             const initialValue = (!isNaN(Number(initialFormData.value)) && isFinite(Number(initialFormData.value))) ? Number(initialFormData.value) : 1;
-            // Correct the form value if it defaulted
+            // Correct the form value if it somehow wasn't the default number
             if (initialValue !== initialFormData.value) {
                 setValue("value", initialValue, { shouldValidate: false });
             }
             // Set the tracked states and perform initial conversion
             setLastValidInputValue(initialValue);
             setSelectedCategory(initialFormData.category as UnitCategory); // Track initial category
-            const initialResult = convertUnits({...initialFormData, value: initialValue}); // Use corrected initial value
+
+            // Ensure the correct toUnit is set for the initial conversion (it should match defaultValues)
+            const initialToUnit = initialFormData.category === 'Mass' ? 'g' : initialFormData.toUnit;
+            if(initialToUnit !== initialFormData.toUnit) {
+                setValue("toUnit", initialToUnit, { shouldValidate: false });
+            } else {
+                 // If the initial toUnit IS 'g' (or whatever the default is supposed to be),
+                 // still explicitly set it to ensure consistency, especially if defaultValues were dynamic.
+                 setValue("toUnit", initialToUnit, { shouldValidate: false });
+            }
+
+            const initialResult = convertUnits({...initialFormData, value: initialValue, toUnit: initialToUnit }); // Use corrected initial value and ensure correct toUnit
             setConversionResult(initialResult);
         }
      }
@@ -541,4 +554,6 @@ export function UnitConverter() {
        </div> */}
     </div>
   );
-}
+});
+
+UnitConverter.displayName = 'UnitConverter';
