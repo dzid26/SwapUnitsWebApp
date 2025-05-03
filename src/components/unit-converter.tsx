@@ -134,14 +134,14 @@ export function UnitConverter() {
   React.useEffect(() => {
     if (currentCategory !== selectedCategory) {
       setSelectedCategory(currentCategory as UnitCategory);
-      setValue("fromUnit", "", { shouldValidate: true });
-      setValue("toUnit", "", { shouldValidate: true });
-      setConversionResult(null);
-      // Reset value to 1 when category changes for predictability
-      setValue("value", 1, { shouldValidate: true });
+      const units = getUnitsForCategory(currentCategory as UnitCategory);
+      setValue("fromUnit", units[0]?.symbol ?? "", { shouldValidate: true }); // Set first unit as default
+      setValue("toUnit", units[1]?.symbol ?? units[0]?.symbol ?? "", { shouldValidate: true }); // Set second unit or first if only one
+      setValue("value", 1, { shouldValidate: true }); // Reset value on category change
       setLastValidInputValue(1);
+      setConversionResult(null); // Clear previous result
     }
-  }, [currentCategory, selectedCategory, setValue]);
+  }, [currentCategory, selectedCategory, setValue, getUnitsForCategory]);
 
 
   // Effect for automatic conversion on relevant input changes
@@ -162,6 +162,15 @@ export function UnitConverter() {
     // Dependencies: Trigger re-calculation whenever any of these watched values change
     // Also runs on initial mount due to default values
   }, [inputValue, fromUnitValue, toUnitValue, currentCategory, convertUnits, getValues]);
+
+   // Effect to perform initial calculation on mount with default values
+   React.useEffect(() => {
+     const initialFormData = getValues();
+     const initialResult = convertUnits(initialFormData);
+     setConversionResult(initialResult);
+     // Only run this on mount
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
 
 
   const handlePresetSelect = (preset: Preset) => {
@@ -208,8 +217,14 @@ export function UnitConverter() {
             </svg>
             Unitopia - Unit Converter
           </CardTitle>
+           {/* 3-Step Explanation */}
+           <div className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
+             <p><span className="font-semibold text-primary">1. Select:</span> Choose your unit category (e.g., Length, Mass).</p>
+             <p><span className="font-semibold text-primary">2. Input:</span> Pick your 'From' and 'To' units and enter the value.</p>
+             <p><span className="font-semibold text-primary">3. Convert:</span> The result appears instantly below!</p>
+           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0"> {/* Adjusted padding top */}
           <Form {...form}>
             <form className="space-y-6">
               {/* Category Selector */}
@@ -222,13 +237,7 @@ export function UnitConverter() {
                     <Select
                       onValueChange={(value) => {
                           field.onChange(value);
-                          // Explicitly trigger dependent field updates and clear result
-                          const units = getUnitsForCategory(value as UnitCategory);
-                          setValue("fromUnit", units[0]?.symbol ?? "", { shouldValidate: true }); // Set first unit as default
-                          setValue("toUnit", units[1]?.symbol ?? units[0]?.symbol ?? "", { shouldValidate: true }); // Set second unit or first
-                          setValue("value", 1, { shouldValidate: true }); // Reset value on category change
-                          setLastValidInputValue(1);
-                          setConversionResult(null);
+                          // No need to manually trigger conversion here, useEffect handles it
                       }}
                       value={field.value}
                     >
@@ -354,7 +363,8 @@ export function UnitConverter() {
                         onChange={(e) => {
                             const rawValue = e.target.value;
                             // Allow empty string, partial numbers (like "1.", "."), or valid numbers
-                            if (rawValue === '' || /^-?\d*\.?\d*$/.test(rawValue)) {
+                            // Also allow negative sign at the start
+                             if (rawValue === '' || rawValue === '-' || /^-?\d*\.?\d*$/.test(rawValue)) {
                                 field.onChange(rawValue); // Update form state immediately
                             }
                             // Let the useEffect handle the conversion logic based on the watched value
