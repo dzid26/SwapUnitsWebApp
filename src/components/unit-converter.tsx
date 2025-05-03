@@ -68,7 +68,7 @@ export function UnitConverter() {
     defaultValues: {
       category: "Mass", // Default category
       fromUnit: "kg",  // Default from unit (Kilogram for Mass)
-      toUnit: "g",    // Default to unit (Gram for Mass)
+      toUnit: "lb",    // Default to unit (Pound for Mass) - Changed from g
       value: 1,        // Default value
     },
   });
@@ -143,20 +143,46 @@ export function UnitConverter() {
       setSelectedCategory(newCategory); // Update the state tracking the category
       const units = getUnitsForCategory(newCategory);
 
-      // Determine default units
-      let firstUnitSymbol = units[0]?.symbol ?? "";
-      let secondUnitSymbol = units.length > 1 ? (units[1]?.symbol ?? firstUnitSymbol) : firstUnitSymbol;
+      // Determine sensible default units for the new category
+      let firstUnitSymbol = units[0]?.symbol ?? ""; // Fallback to first unit
+      let secondUnitSymbol = units.length > 1 ? (units[1]?.symbol ?? firstUnitSymbol) : firstUnitSymbol; // Fallback to second or first
 
-      // Specific default for Temperature category
-      if (newCategory === 'Temperature') {
-          const celsiusUnit = units.find(u => u.symbol === '°C');
-          const fahrenheitUnit = units.find(u => u.symbol === '°F');
-          // Only override if both C and F units are found
-          if (celsiusUnit && fahrenheitUnit) {
-              firstUnitSymbol = celsiusUnit.symbol;
-              secondUnitSymbol = fahrenheitUnit.symbol;
-          }
+      switch (newCategory) {
+        case 'Length':
+          firstUnitSymbol = units.find(u => u.symbol === 'm')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === 'ft')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Mass':
+          firstUnitSymbol = units.find(u => u.symbol === 'kg')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === 'lb')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Temperature':
+          firstUnitSymbol = units.find(u => u.symbol === '°C')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === '°F')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Time':
+          firstUnitSymbol = units.find(u => u.symbol === 'hr')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === 'min')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Pressure':
+           firstUnitSymbol = units.find(u => u.symbol === 'bar')?.symbol ?? firstUnitSymbol;
+           secondUnitSymbol = units.find(u => u.symbol === 'psi')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Area':
+          firstUnitSymbol = units.find(u => u.symbol === 'm²')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === 'ft²')?.symbol ?? secondUnitSymbol;
+          break;
+        case 'Volume':
+          firstUnitSymbol = units.find(u => u.symbol === 'L')?.symbol ?? firstUnitSymbol;
+          secondUnitSymbol = units.find(u => u.symbol === 'gal')?.symbol ?? secondUnitSymbol; // US Gallon
+          break;
+        case 'Energy':
+           firstUnitSymbol = units.find(u => u.symbol === 'kWh')?.symbol ?? firstUnitSymbol;
+           secondUnitSymbol = units.find(u => u.symbol === 'BTU')?.symbol ?? secondUnitSymbol;
+          break;
+        // Default case uses the initial fallbacks (first and second unit)
       }
+
 
       // Set the 'fromUnit' and 'toUnit' based on the determined symbols
       if (firstUnitSymbol) {
@@ -176,11 +202,10 @@ export function UnitConverter() {
     // Check if selectedCategory is initially empty and currentCategory has a value (on first load with defaults)
     else if (selectedCategory === "" && currentCategory && Object.keys(unitData).includes(currentCategory)) {
          setSelectedCategory(currentCategory as UnitCategory);
-         // Keep existing default values if they are already set
+         // Keep existing default values if they are already set (e.g., from defaultValues)
          const initialFormData = getValues();
          if (initialFormData.fromUnit && initialFormData.toUnit) {
-             // If default units are already set (like kg and g for Mass), keep them
-             // and trigger initial calculation
+             // Trigger initial calculation with the default values
              const initialResult = convertUnits(initialFormData);
              setConversionResult(initialResult);
          } else {
@@ -190,21 +215,22 @@ export function UnitConverter() {
             const secondUnitSymbol = units.length > 1 ? (units[1]?.symbol ?? firstUnitSymbol) : firstUnitSymbol;
             if (firstUnitSymbol) setValue("fromUnit", firstUnitSymbol, { shouldValidate: true, shouldDirty: true });
             if (secondUnitSymbol) setValue("toUnit", secondUnitSymbol, { shouldValidate: true, shouldDirty: true });
+             const result = convertUnits(getValues()); // Recalculate after setting fallbacks
+             setConversionResult(result);
          }
 
-         if (initialFormData.value !== undefined) {
+         if (initialFormData.value !== undefined && !isNaN(Number(initialFormData.value))) {
             setLastValidInputValue(Number(initialFormData.value));
          } else {
              setValue("value", 1, { shouldValidate: true, shouldDirty: true });
              setLastValidInputValue(1);
-         }
-         // Trigger calculation if not done already
-         if (!conversionResult) {
-             const result = convertUnits(getValues());
-             setConversionResult(result);
+              if (!conversionResult) { // Recalculate if value was invalid initially
+                  const result = convertUnits(getValues());
+                  setConversionResult(result);
+              }
          }
     }
- }, [currentCategory, selectedCategory, setValue, getUnitsForCategory, convertUnits, getValues, conversionResult]);
+ }, [currentCategory, selectedCategory, setValue, getUnitsForCategory, convertUnits, getValues, conversionResult]); // Added conversionResult to dependencies to avoid stale closures
 
 
 
@@ -221,6 +247,7 @@ export function UnitConverter() {
        setConversionResult(result);
     } else {
        // If input is invalid (empty, NaN, non-finite), clear the result
+       // Keep the last valid input value displayed, but show '-' for the result
        setConversionResult(null);
     }
     // Dependencies: Trigger re-calculation whenever any of these watched values change
@@ -230,10 +257,17 @@ export function UnitConverter() {
    // Effect to perform initial calculation on mount with default values
    React.useEffect(() => {
      const initialFormData = getValues();
-     if(initialFormData.category && initialFormData.fromUnit && initialFormData.toUnit && initialFormData.value !== undefined) {
+     if(initialFormData.category && initialFormData.fromUnit && initialFormData.toUnit && initialFormData.value !== undefined && !isNaN(Number(initialFormData.value)) && isFinite(Number(initialFormData.value))) {
        const initialResult = convertUnits(initialFormData);
        setConversionResult(initialResult);
        setLastValidInputValue(Number(initialFormData.value)); // Set initial last valid value
+     } else {
+        // Handle case where initial value might be invalid
+        setLastValidInputValue(1); // Default to 1 if initial is invalid
+        setValue("value", 1, { shouldValidate: false }); // Set form value too
+        const validInitialData = { ...initialFormData, value: 1 };
+        const initialResult = convertUnits(validInitialData);
+        setConversionResult(initialResult);
      }
      // Only run this on mount
      // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,15 +275,29 @@ export function UnitConverter() {
 
 
   const handlePresetSelect = (preset: Preset) => {
-    reset({
-      category: preset.category,
-      fromUnit: preset.fromUnit,
-      toUnit: preset.toUnit,
-      value: 1, // Reset value to 1 for presets
-    });
-     setLastValidInputValue(1);
-    // The useEffect for dependencies will trigger the calculation
+    // Find the actual category object based on the preset's category name/key
+    const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
+
+    if (!presetCategory) return; // Should not happen if presets are valid
+
+    // Set the category first to ensure units are loaded correctly before setting units
+    setValue("category", presetCategory, { shouldValidate: true, shouldDirty: true });
+
+    // Use setTimeout to allow state update and re-render before setting units and value
+    // This helps ensure the correct units are available in the dropdowns
+    setTimeout(() => {
+        reset({
+            category: presetCategory,
+            fromUnit: preset.fromUnit,
+            toUnit: preset.toUnit,
+            value: 1, // Reset value to 1 for presets
+        });
+        setLastValidInputValue(1);
+        // The useEffect for dependencies will trigger the calculation automatically
+        // after the reset completes.
+    }, 0);
   };
+
 
   const swapUnits = () => {
     const currentFrom = fromUnitValue;
@@ -442,12 +490,14 @@ export function UnitConverter() {
                         onChange={(e) => {
                             const rawValue = e.target.value;
                             // Allow empty string, partial numbers (like "1.", "."), or valid numbers
-                            // Also allow negative sign at the start
-                             if (rawValue === '' || rawValue === '-' || /^-?\d*\.?\d*$/.test(rawValue)) {
+                            // Also allow negative sign at the start, scientific 'e/E' notation
+                            // Updated Regex: Allows optional negative, digits, optional dot, more digits, optional E/e, optional +/- sign, digits
+                             if (rawValue === '' || rawValue === '-' || /^-?\d*\.?\d*([eE][-+]?\d*)?$/.test(rawValue)) {
                                 field.onChange(rawValue); // Update form state immediately
                             }
                             // Let the useEffect handle the conversion logic based on the watched value
                         }}
+                        value={field.value === '' || field.value === '-' ? field.value : (isNaN(Number(field.value)) ? '' : field.value)} // Display control for intermediate states
                         disabled={!fromUnitValue || !toUnitValue}
                         aria-required="true" // Indicate required field
                       />
@@ -504,4 +554,3 @@ export function UnitConverter() {
     </div>
   );
 }
-
