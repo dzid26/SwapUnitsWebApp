@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -23,17 +24,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { unitData, presets } from "@/lib/unit-data";
-import { type UnitCategory, type Unit, type ConversionResult } from "@/types";
+import { type UnitCategory, type Unit, type ConversionResult, type Preset } from "@/types";
 import {
   ArrowRightLeft,
-  Thermometer,
-  Weight,
-  Ruler,
-  Clock,
-  Gauge,
-  AreaChart,
-  Waves,
-  CloudLightning,
 } from "lucide-react";
 import { PresetList } from "./preset-list";
 import { UnitIcon } from "./unit-icon";
@@ -43,9 +36,13 @@ const formSchema = z.object({
   category: z.string().min(1, "Please select a category"),
   fromUnit: z.string().min(1, "Please select an input unit"),
   toUnit: z.string().min(1, "Please select an output unit"),
-  value: z.coerce
-    .number({ invalid_type_error: "Please enter a valid number" })
-    .positive("Value must be positive"),
+  // Allow empty string or valid positive number
+  value: z.union([
+     z.literal(''), // Allow empty string
+     z.coerce.number({ invalid_type_error: "Please enter a valid number" })
+       .positive("Value must be positive")
+       .or(z.nan()) // Allow NaN initially or during typing invalid numbers
+    ]).optional(), // Make value optional initially
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -59,28 +56,20 @@ export function UnitConverter() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange', // Trigger validation on change
     defaultValues: {
       category: "",
       fromUnit: "",
       toUnit: "",
-      value: 1,
+      value: 1, // Default to 1, but allow empty/invalid during typing
     },
   });
 
-  const { watch, setValue, reset } = form;
+  const { watch, setValue, reset, formState } = form;
   const currentCategory = watch("category");
   const fromUnitValue = watch("fromUnit");
   const toUnitValue = watch("toUnit");
   const inputValue = watch("value");
-
-  React.useEffect(() => {
-    if (currentCategory !== selectedCategory) {
-      setSelectedCategory(currentCategory as UnitCategory);
-      setValue("fromUnit", "");
-      setValue("toUnit", "");
-      setConversionResult(null);
-    }
-  }, [currentCategory, selectedCategory, setValue]);
 
   const getUnitsForCategory = (category: UnitCategory | ""): Unit[] => {
     return category ? unitData[category]?.units ?? [] : [];
@@ -88,25 +77,31 @@ export function UnitConverter() {
 
   const availableUnits = getUnitsForCategory(selectedCategory);
 
-  const convertUnits = (data: FormData): ConversionResult | null => {
-    if (!selectedCategory) return null;
+  const convertUnits = React.useCallback((data: Partial<FormData>): ConversionResult | null => {
+    const { category, fromUnit, toUnit, value } = data;
 
-    const fromUnitData = availableUnits.find(
-      (u) => u.symbol === data.fromUnit
-    );
-    const toUnitData = availableUnits.find((u) => u.symbol === data.toUnit);
+    if (!category || !fromUnit || !toUnit || value === undefined || value === null || isNaN(Number(value)) || value === '') {
+        return null;
+    }
 
-    if (!fromUnitData || !toUnitData) return null;
+    const currentUnits = getUnitsForCategory(category as UnitCategory);
+    const fromUnitData = currentUnits.find((u) => u.symbol === fromUnit);
+    const toUnitData = currentUnits.find((u) => u.symbol === toUnit);
+    const numericValue = Number(value);
+
+    if (!fromUnitData || !toUnitData || !isFinite(numericValue)) {
+      return null;
+    }
 
     // Special handling for temperature
-    if (selectedCategory === "Temperature") {
+    if (category === "Temperature") {
       let tempInCelsius: number;
       if (fromUnitData.symbol === "°C") {
-        tempInCelsius = data.value;
+        tempInCelsius = numericValue;
       } else if (fromUnitData.symbol === "°F") {
-        tempInCelsius = (data.value - 32) * (5 / 9);
+        tempInCelsius = (numericValue - 32) * (5 / 9);
       } else { // Kelvin
-        tempInCelsius = data.value - 273.15;
+        tempInCelsius = numericValue - 273.15;
       }
 
       let resultValue: number;
@@ -121,49 +116,59 @@ export function UnitConverter() {
     }
 
     // General conversion using base unit factors
-    const valueInBaseUnit = data.value * fromUnitData.factor;
+    const valueInBaseUnit = numericValue * fromUnitData.factor;
     const resultValue = valueInBaseUnit / toUnitData.factor;
 
     return { value: resultValue, unit: toUnitData.symbol };
-  };
+  }, []); // Add empty dependency array as getUnitsForCategory is stable based on imports
 
-  const onSubmit = (data: FormData) => {
-    const result = convertUnits(data);
-    setConversionResult(result);
-  };
 
-  const handlePresetSelect = (preset: (typeof presets)[0]) => {
+  // Effect to handle category changes
+  React.useEffect(() => {
+    if (currentCategory !== selectedCategory) {
+      setSelectedCategory(currentCategory as UnitCategory);
+      setValue("fromUnit", "");
+      setValue("toUnit", "");
+      setConversionResult(null);
+    }
+  }, [currentCategory, selectedCategory, setValue]);
+
+  // Effect for automatic conversion on value/unit changes
+  React.useEffect(() => {
+    // Only calculate if the form is valid or if the only error is the value field being empty/invalid temporarily
+    const isReadyToCalculate = formState.isValid ||
+      (Object.keys(formState.errors).length === 1 && formState.errors.value && (inputValue === '' || isNaN(Number(inputValue))));
+
+    if (currentCategory && fromUnitValue && toUnitValue && isReadyToCalculate && inputValue !== undefined && inputValue !== null && !isNaN(Number(inputValue)) && inputValue !== '') {
+       const result = convertUnits({
+         category: currentCategory as UnitCategory,
+         fromUnit: fromUnitValue,
+         toUnit: toUnitValue,
+         value: Number(inputValue), // Ensure it's a number
+       });
+       setConversionResult(result);
+    } else {
+       // Clear result if inputs become invalid or incomplete
+       setConversionResult(null);
+    }
+  }, [inputValue, fromUnitValue, toUnitValue, currentCategory, convertUnits, formState.isValid, formState.errors]);
+
+  const handlePresetSelect = (preset: Preset) => {
     reset({
       category: preset.category,
       fromUnit: preset.fromUnit,
       toUnit: preset.toUnit,
       value: 1, // Reset value to 1 for presets
     });
-    // Trigger conversion immediately for presets
-    const result = convertUnits({
-      category: preset.category,
-      fromUnit: preset.fromUnit,
-      toUnit: preset.toUnit,
-      value: 1,
-    });
-    setConversionResult(result);
+    // Effect will trigger calculation
   };
 
   const swapUnits = () => {
     const currentFrom = fromUnitValue;
     const currentTo = toUnitValue;
-    setValue("fromUnit", currentTo);
-    setValue("toUnit", currentFrom);
-    // Recalculate if value exists
-    if (inputValue) {
-       const result = convertUnits({
-        category: selectedCategory as UnitCategory, // Assume category is selected if units are
-        fromUnit: currentTo,
-        toUnit: currentFrom,
-        value: inputValue,
-      });
-      setConversionResult(result);
-    }
+    setValue("fromUnit", currentTo, { shouldValidate: true }); // Trigger validation
+    setValue("toUnit", currentFrom, { shouldValidate: true }); // Trigger validation
+     // Effect will trigger recalculation
   };
 
   return (
@@ -194,7 +199,8 @@ export function UnitConverter() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* No need for onSubmit in the form tag anymore */}
+            <form className="space-y-6">
               <FormField
                 control={form.control}
                 name="category"
@@ -202,7 +208,13 @@ export function UnitConverter() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                          field.onChange(value);
+                          // Reset dependent fields when category changes
+                          setValue("fromUnit", "", { shouldValidate: true });
+                          setValue("toUnit", "", { shouldValidate: true });
+                          setConversionResult(null); // Clear result on category change
+                      }}
                       value={field.value}
                     >
                       <FormControl>
@@ -270,7 +282,7 @@ export function UnitConverter() {
                     size="icon"
                     onClick={swapUnits}
                     disabled={!fromUnitValue || !toUnitValue}
-                    className="mb-1"
+                    className="mb-1" // Align with form input bottom border
                     aria-label="Swap units"
                   >
                     <ArrowRightLeft className="h-4 w-4" />
@@ -319,6 +331,15 @@ export function UnitConverter() {
                         step="any"
                         placeholder="Enter value"
                         {...field}
+                        onChange={(e) => {
+                            // Handle empty string case for the input
+                            const val = e.target.value;
+                            if (val === '') {
+                                field.onChange(''); // Pass empty string
+                            } else {
+                                field.onChange(e); // Let react-hook-form handle coercion
+                            }
+                        }}
                         disabled={!fromUnitValue || !toUnitValue}
                       />
                     </FormControl>
@@ -328,18 +349,13 @@ export function UnitConverter() {
               />
 
                <ConversionDisplay
-                fromValue={inputValue}
-                fromUnit={fromUnitValue}
+                 // Pass NaN if input is invalid/empty, let component handle display
+                fromValue={ typeof inputValue === 'number' && !isNaN(inputValue) ? inputValue : undefined}
+                fromUnit={fromUnitValue ?? ''}
                 result={conversionResult}
                />
 
-              <Button
-                type="submit"
-                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={!form.formState.isValid}
-              >
-                Convert
-              </Button>
+              {/* Convert Button Removed */}
             </form>
           </Form>
         </CardContent>
@@ -349,3 +365,5 @@ export function UnitConverter() {
     </div>
   );
 }
+      
+    

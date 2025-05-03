@@ -1,3 +1,4 @@
+
 export type Unit = {
   name: string;
   symbol: string;
@@ -25,9 +26,12 @@ export type ConversionResult = {
   unit: string;
 };
 
+// Ensure Preset type matches the structure used in unit-data.ts and components
 export type Preset = {
     category: UnitCategory;
     fromUnit: string;
     toUnit: string;
     name: string;
-}
+};
+    
+    
