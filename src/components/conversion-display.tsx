@@ -21,13 +21,14 @@ export function ConversionDisplay({ fromValue, fromUnit, result, format = 'norma
             return '-'; // Indicator for invalid numbers
         }
         if (format === 'scientific') {
-            // Use scientific notation always if selected, with 4 decimal places for precision
-            return num.toExponential(4);
+            // Use scientific notation always if selected, let JS determine precision
+            return num.toExponential();
         }
         // Default 'normal' formatting
         // Use exponential notation for very large or very small non-zero numbers
+        // Let JS determine precision for exponential notation here too
         if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-6) && num !== 0) {
-            return num.toExponential(4);
+            return num.toExponential();
         }
         // Otherwise, format with commas and appropriate decimal places (up to 6)
         return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
