@@ -11,29 +11,29 @@ interface ConversionDisplayProps {
     format?: NumberFormat; // Add format prop, default to 'normal'
 }
 
+// Helper function for number formatting
+const formatNumber = (num: number, format: NumberFormat = 'normal'): string => {
+    if (!isFinite(num)) {
+        return '-'; // Indicator for invalid numbers
+    }
+    if (format === 'scientific') {
+        // Use scientific notation always if selected, let JS determine precision
+        return num.toExponential();
+    }
+    // Default 'normal' formatting
+    // Use exponential notation for very large or very small non-zero numbers
+    // Let JS determine precision for exponential notation here too
+    if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-6) && num !== 0) {
+        return num.toExponential();
+    }
+    // Otherwise, format with commas and appropriate decimal places (up to 6)
+    return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
+};
+
+
 export function ConversionDisplay({ fromValue, fromUnit, result, format = 'normal' }: ConversionDisplayProps) {
     // Determine if we should show the placeholder state
     const showPlaceholder = fromValue === undefined || fromUnit === '' || !result;
-
-    // Format numbers based on the selected format
-    const formatNumber = (num: number): string => {
-        if (!isFinite(num)) {
-            return '-'; // Indicator for invalid numbers
-        }
-        if (format === 'scientific') {
-            // Use scientific notation always if selected, let JS determine precision
-            return num.toExponential();
-        }
-        // Default 'normal' formatting
-        // Use exponential notation for very large or very small non-zero numbers
-        // Let JS determine precision for exponential notation here too
-        if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-6) && num !== 0) {
-            return num.toExponential();
-        }
-        // Otherwise, format with commas and appropriate decimal places (up to 6)
-        return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
-    };
-
 
     if (showPlaceholder) {
         // Placeholder state: Render dimmed card
@@ -42,8 +42,8 @@ export function ConversionDisplay({ fromValue, fromUnit, result, format = 'norma
                 <CardContent className="p-4">
                     <div className="text-center sm:text-left">
                         <p className="text-sm text-muted-foreground h-5">
-                             {/* Show "Enter value..." if no valid number yet, otherwise show the base part */}
-                             {fromValue !== undefined && fromUnit ? `${formatNumber(fromValue)} ${fromUnit} equals...` : 'Enter a value to convert'}
+                             {/* Always format the potential 'fromValue' in normal format for the placeholder */}
+                             {fromValue !== undefined && fromUnit ? `${formatNumber(fromValue, 'normal')} ${fromUnit} equals...` : 'Enter a value to convert'}
                         </p>
                         <p className="text-2xl font-bold text-muted-foreground h-[32px]">
                            {/* Placeholder symbol */}
@@ -61,13 +61,13 @@ export function ConversionDisplay({ fromValue, fromUnit, result, format = 'norma
             <CardContent className="p-4">
                 <div className="text-center sm:text-left">
                     <p className="text-sm text-muted-foreground">
-                        {/* We know fromValue is defined here because showPlaceholder is false */}
-                        {formatNumber(fromValue!)} {fromUnit} equals
+                        {/* Always display the 'fromValue' in normal format */}
+                        {formatNumber(fromValue!, 'normal')} {fromUnit} equals
                     </p>
                     {/* Apply purple color and ensure font-bold */}
                     <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {/* We know result and result.value are defined here */}
-                        {formatNumber(result.value)}{' '}
+                        {/* Format the result value based on the selected 'format' prop */}
+                        {formatNumber(result.value, format)}{' '}
                         <span className="text-lg font-medium text-purple-600 dark:text-purple-400">{result.unit}</span>
                     </p>
                 </div>
@@ -75,4 +75,3 @@ export function ConversionDisplay({ fromValue, fromUnit, result, format = 'norma
         </Card>
     );
 }
-
