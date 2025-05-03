@@ -67,8 +67,8 @@ export function UnitConverter() {
     mode: 'onChange', // Validate on change for immediate feedback
     defaultValues: {
       category: "Mass", // Default category
-      fromUnit: "kg",  // Default from unit
-      toUnit: "mg",    // Default to unit
+      fromUnit: "kg",  // Default from unit (Kilogram for Mass)
+      toUnit: "g",    // Default to unit (Gram for Mass)
       value: 1,        // Default value
     },
   });
@@ -137,21 +137,29 @@ export function UnitConverter() {
 
   // Effect to handle category changes: Set default units when category changes
   React.useEffect(() => {
-    // Only run if the category actually changed
-    if (currentCategory && currentCategory !== selectedCategory) {
-      setSelectedCategory(currentCategory as UnitCategory);
-      const units = getUnitsForCategory(currentCategory as UnitCategory);
+    // Check if the watched category is valid and actually changed
+    if (currentCategory && currentCategory !== selectedCategory && Object.keys(unitData).includes(currentCategory)) {
+      const newCategory = currentCategory as UnitCategory;
+      setSelectedCategory(newCategory); // Update the state tracking the category
+      const units = getUnitsForCategory(newCategory);
 
       const firstUnitSymbol = units[0]?.symbol ?? "";
       // Use second unit symbol if available, otherwise fallback to the first one
-      const secondUnitSymbol = units[1]?.symbol ?? firstUnitSymbol;
+      const secondUnitSymbol = units.length > 1 ? (units[1]?.symbol ?? firstUnitSymbol) : firstUnitSymbol;
 
       // Set the 'fromUnit' to the first unit and 'toUnit' to the second (or first)
-      setValue("fromUnit", firstUnitSymbol, { shouldValidate: true });
-      setValue("toUnit", secondUnitSymbol, { shouldValidate: true });
+      // Ensure we only set valid symbols
+      if (firstUnitSymbol) {
+        setValue("fromUnit", firstUnitSymbol, { shouldValidate: true });
+      }
+      if (secondUnitSymbol) {
+        setValue("toUnit", secondUnitSymbol, { shouldValidate: true });
+      }
+
       setValue("value", 1, { shouldValidate: true }); // Reset value on category change
       setLastValidInputValue(1);
-      setConversionResult(null); // Clear previous result
+      setConversionResult(null); // Clear previous result initially
+      // The subsequent useEffect will recalculate based on new defaults
     }
   }, [currentCategory, selectedCategory, setValue, getUnitsForCategory]);
 
@@ -179,8 +187,10 @@ export function UnitConverter() {
    // Effect to perform initial calculation on mount with default values
    React.useEffect(() => {
      const initialFormData = getValues();
-     const initialResult = convertUnits(initialFormData);
-     setConversionResult(initialResult);
+     if(initialFormData.category && initialFormData.fromUnit && initialFormData.toUnit && initialFormData.value !== undefined) {
+       const initialResult = convertUnits(initialFormData);
+       setConversionResult(initialResult);
+     }
      // Only run this on mount
      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
@@ -450,3 +460,4 @@ export function UnitConverter() {
     </div>
   );
 }
+
