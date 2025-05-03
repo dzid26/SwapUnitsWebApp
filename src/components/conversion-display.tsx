@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ConversionResult, NumberFormat } from '@/types';
@@ -37,40 +36,39 @@ export function ConversionDisplay({ fromValue, fromUnit, result, format = 'norma
     // Determine if we should show the placeholder state
     const showPlaceholder = fromValue === undefined || fromUnit === '' || !result;
 
-    if (showPlaceholder) {
-        // Placeholder state: Render dimmed card
-        return (
-            <Card className="bg-muted/50 border-muted shadow-sm opacity-60 transition-opacity duration-300">
-                <CardContent className="p-4">
-                    <div className="text-center sm:text-left">
-                        <p className="text-sm text-muted-foreground h-5">
-                             {/* Always format the potential 'fromValue' in normal format for the placeholder */}
-                             {fromValue !== undefined && fromUnit ? `${formatNumber(fromValue, 'normal')} ${fromUnit} equals...` : 'Enter a value to convert'}
-                        </p>
-                        <p className="text-2xl font-bold text-muted-foreground h-[32px]">
-                           {/* Placeholder symbol */}
-                           -
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+    // Prepare the text content for screen readers
+    const screenReaderText = showPlaceholder
+        ? (fromValue !== undefined && fromUnit ? `Waiting for conversion of ${formatNumber(fromValue, 'normal')} ${fromUnit}` : 'Enter a value and select units to convert')
+        : `${formatNumber(fromValue!, 'normal')} ${fromUnit} equals ${formatNumber(result.value, format)} ${result.unit}`;
 
-    // Valid result state: Render highlighted card
     return (
-        <Card className="bg-primary/10 border-primary/50 shadow-sm transition-opacity duration-300">
+        // Add aria-live region to announce changes
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+            {screenReaderText}
+        </div>
+        // The visual card remains separate
+        <Card className={cn(
+            "shadow-sm transition-opacity duration-300",
+            showPlaceholder ? "bg-muted/50 border-muted opacity-60" : "bg-primary/10 border-primary/50"
+        )}>
             <CardContent className="p-4">
                 <div className="text-center sm:text-left">
-                    <p className="text-sm text-muted-foreground">
-                        {/* Always display the 'fromValue' in normal format */}
-                        {formatNumber(fromValue!, 'normal')} {fromUnit} equals
+                    <p className="text-sm text-muted-foreground h-5">
+                        {showPlaceholder
+                         ? (fromValue !== undefined && fromUnit ? `${formatNumber(fromValue, 'normal')} ${fromUnit} equals...` : 'Enter a value to convert')
+                         : `${formatNumber(fromValue!, 'normal')} ${fromUnit} equals`
+                        }
                     </p>
-                    {/* Apply purple color and ensure font-bold */}
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {/* Format the result value based on the selected 'format' prop */}
-                        {formatNumber(result.value, format)}{' '}
-                        <span className="text-lg font-medium text-purple-600 dark:text-purple-400">{result.unit}</span>
+                    <p className={cn(
+                        "text-2xl font-bold h-[32px]", // Ensure consistent height
+                        showPlaceholder ? "text-muted-foreground" : "text-purple-600 dark:text-purple-400"
+                    )}>
+                       {showPlaceholder ? '-' : (
+                            <>
+                                {formatNumber(result.value, format)}{' '}
+                                <span className="text-lg font-medium text-purple-600 dark:text-purple-400">{result.unit}</span>
+                            </>
+                       )}
                     </p>
                 </div>
             </CardContent>

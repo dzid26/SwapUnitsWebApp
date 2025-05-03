@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
+  FormDescription, // Import FormDescription
   FormField,
   FormItem,
   FormLabel,
@@ -197,10 +198,13 @@ export function UnitConverter() {
   };
 
   return (
+    // Use semantic main or section tag if appropriate, but div is okay here
     <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
-      <Card className="md:col-span-2 shadow-lg">
+      {/* Main converter card */}
+      <Card className="md:col-span-2 shadow-lg" aria-labelledby="unit-converter-title">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-primary flex items-center gap-2">
+          {/* Use H1 for the main title of the component/page section */}
+          <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2">
              <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -210,6 +214,7 @@ export function UnitConverter() {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="h-6 w-6"
+              aria-hidden="true" // Hide decorative icon from screen readers
             >
               <path d="M21.178 14.147a1.5 1.5 0 0 0-2.356-2.356l-2.97 2.97a1.5 1.5 0 0 0 2.356 2.356l2.97-2.97Z"/>
               <path d="m17 10-1.5 1.5"/>
@@ -219,25 +224,30 @@ export function UnitConverter() {
               <path d="M17 17v-2h-2"/>
               <path d="M7.03 17H12v5H7.031a1.969 1.969 0 0 1-2-1.969V17Z"/>
             </svg>
-            Unitopia - Unit Converter
+            Unitopia - Versatile Unit Converter
           </CardTitle>
-           {/* 3-Step Explanation */}
-           <div className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
-             <p><span className="font-semibold text-primary">1. Select:</span> Choose your unit category (e.g., Length, Mass).</p>
-             <p><span className="font-semibold text-primary">2. Input:</span> Pick your 'From' and 'To' units and enter the value.</p>
-             <p><span className="font-semibold text-primary">3. Convert:</span> The result appears instantly below!</p>
-           </div>
+           {/* Use paragraph for description */}
+           <p className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
+             Quickly convert between common and specialized units. Follow these simple steps:
+           </p>
+           {/* Ordered list for steps */}
+           <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+             <li><span className="font-semibold text-primary">Select Category:</span> Choose the type of measurement (e.g., Length, Mass).</li>
+             <li><span className="font-semibold text-primary">Choose Units & Input Value:</span> Pick the 'From' and 'To' units, then enter the value you want to convert.</li>
+             <li><span className="font-semibold text-primary">View Result:</span> The converted value appears automatically below.</li>
+           </ol>
         </CardHeader>
         <CardContent className="pt-0"> {/* Adjusted padding top */}
           <Form {...form}>
-            <form className="space-y-6">
+            {/* Use form tag semantically */}
+            <form className="space-y-6" aria-live="polite"> {/* aria-live makes results announced */}
               {/* Category Selector */}
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel htmlFor="category-select">Measurement Category</FormLabel> {/* Use htmlFor */}
                     <Select
                       onValueChange={(value) => {
                           field.onChange(value);
@@ -246,10 +256,11 @@ export function UnitConverter() {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        {/* Add aria-describedby if needed */}
+                        <SelectTrigger id="category-select" aria-label="Select measurement category">
                            {field.value ? (
                              <div className="flex items-center gap-2">
-                               <UnitIcon category={field.value as UnitCategory} className="h-4 w-4"/>
+                               <UnitIcon category={field.value as UnitCategory} className="h-4 w-4" aria-hidden="true"/>
                                {unitData[field.value as UnitCategory]?.name ?? 'Select Category'}
                              </div>
                            ) : (
@@ -261,13 +272,14 @@ export function UnitConverter() {
                         {Object.keys(unitData).map((cat) => (
                           <SelectItem key={cat} value={cat}>
                              <div className="flex items-center gap-2">
-                                <UnitIcon category={cat as UnitCategory} className="h-4 w-4"/>
+                                <UnitIcon category={cat as UnitCategory} className="h-4 w-4" aria-hidden="true"/>
                                 {unitData[cat as UnitCategory].name}
                              </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormDescription>Select the type of unit you want to convert.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -282,14 +294,14 @@ export function UnitConverter() {
                     name="fromUnit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>From</FormLabel>
+                        <FormLabel htmlFor="from-unit-select">From Unit</FormLabel> {/* Use htmlFor */}
                         <Select
                           onValueChange={(value) => field.onChange(value)} // Let useEffect handle calculation
                           value={field.value}
                           disabled={!selectedCategory}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger id="from-unit-select" aria-label="Select the unit to convert from">
                               <SelectValue placeholder="Select input unit" />
                             </SelectTrigger>
                           </FormControl>
@@ -314,9 +326,9 @@ export function UnitConverter() {
                     onClick={swapUnits}
                     disabled={!fromUnitValue || !toUnitValue}
                     className="mb-1" // Align vertically
-                    aria-label="Swap units"
+                    aria-label="Swap from and to units" // Descriptive aria-label
                   >
-                    <ArrowRightLeft className="h-4 w-4" />
+                    <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
                   </Button>
 
                   {/* To Unit */}
@@ -325,14 +337,14 @@ export function UnitConverter() {
                     name="toUnit"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>To</FormLabel>
+                        <FormLabel htmlFor="to-unit-select">To Unit</FormLabel> {/* Use htmlFor */}
                         <Select
                           onValueChange={(value) => field.onChange(value)} // Let useEffect handle calculation
                           value={field.value}
                           disabled={!selectedCategory}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger id="to-unit-select" aria-label="Select the unit to convert to">
                               <SelectValue placeholder="Select output unit" />
                             </SelectTrigger>
                           </FormControl>
@@ -357,9 +369,10 @@ export function UnitConverter() {
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Value to Convert</FormLabel>
+                    <FormLabel htmlFor="value-input">Value to Convert</FormLabel> {/* Use htmlFor */}
                     <FormControl>
                       <Input
+                        id="value-input" // Match htmlFor
                         type="text" // Use text type to allow more flexible input during typing
                         inputMode="decimal" // Hint for numeric keyboard on mobile
                         placeholder="Enter value"
@@ -374,8 +387,10 @@ export function UnitConverter() {
                             // Let the useEffect handle the conversion logic based on the watched value
                         }}
                         disabled={!fromUnitValue || !toUnitValue}
+                        aria-required="true" // Indicate required field
                       />
                     </FormControl>
+                    <FormDescription>Enter the numerical value you wish to convert.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -390,13 +405,14 @@ export function UnitConverter() {
                />
 
                {/* Number Formatting Options */}
-                <div className="pt-4">
-                  <Label className="mb-2 block font-medium">Result Formatting</Label>
+                <fieldset className="pt-4"> {/* Use fieldset for grouping related radio buttons */}
+                  <legend className="mb-2 block font-medium">Result Formatting Options</legend>
                    <RadioGroup
                      defaultValue="normal"
                      value={numberFormat}
                      onValueChange={(value: string) => setNumberFormat(value as NumberFormat)}
                      className="flex flex-col sm:flex-row gap-4"
+                     aria-label="Choose number format for the result"
                    >
                      <div className="flex items-center space-x-2">
                        <RadioGroupItem value="normal" id="format-normal" />
@@ -404,18 +420,25 @@ export function UnitConverter() {
                      </div>
                      <div className="flex items-center space-x-2">
                        <RadioGroupItem value="scientific" id="format-scientific" />
-                       <Label htmlFor="format-scientific" className="cursor-pointer">Scientific (e.g., 1.23e+3)</Label>
+                       <Label htmlFor="format-scientific" className="cursor-pointer">Scientific (e.g., 1.23E+6)</Label>
                      </div>
                    </RadioGroup>
-                </div>
+                </fieldset>
 
             </form>
           </Form>
         </CardContent>
       </Card>
 
-      {/* Preset List */}
-      <PresetList onPresetSelect={handlePresetSelect} />
+      {/* Preset List - use aside or section if appropriate */}
+      <aside className="md:col-span-1"> {/* Use aside for complementary content */}
+        <PresetList onPresetSelect={handlePresetSelect} />
+      </aside>
+
+       {/* Potential future ad slot area - Consider semantic placement */}
+       {/* <div className="md:col-span-3 mt-8 h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
+          (Future Ad Area 2)
+       </div> */}
     </div>
   );
 }

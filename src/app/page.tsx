@@ -1,9 +1,69 @@
 import { UnitConverter } from "@/components/unit-converter";
+import type { Metadata } from 'next';
+import Script from 'next/script';
+
+// Page-specific metadata
+export const metadata: Metadata = {
+  title: "Unitopia - Accurate & Fast Unit Conversion Online", // Slightly different title for variety
+  description: "Convert various engineering and everyday units like meters to feet, kg to lbs, Celsius to Fahrenheit, and more. Unitopia offers a simple interface for quick conversions.",
+  alternates: {
+    canonical: '/', // Assuming this is the canonical URL
+  },
+};
+
+// JSON-LD Structured Data for WebApplication
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Unitopia - Unit Converter',
+  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, and energy.',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any', // Web-based
+  url: 'https://YOUR_APP_URL_HERE', // Replace with the actual deployed URL
+  featureList: [
+    'Unit Conversion',
+    'Length Conversion',
+    'Mass Conversion',
+    'Temperature Conversion',
+    'Time Conversion',
+    'Pressure Conversion',
+    'Area Conversion',
+    'Volume Conversion',
+    'Energy Conversion',
+    'Metric Units',
+    'Imperial Units',
+    'Scientific Notation Option',
+    'Common Presets',
+  ],
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy",
+};
+
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 lg:p-16 xl:p-24">
-      <UnitConverter />
-    </main>
+    <>
+      {/* Add JSON-LD structured data to the head */}
+      <Script
+        id="unit-converter-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-12 lg:p-16 xl:p-24">
+         {/* Optional: Add a brief introductory text before the converter */}
+         <p className="text-center text-muted-foreground mb-8 max-w-2xl">
+          Welcome to Unitopia, your reliable partner for seamless unit conversions. Whether you need to convert measurements for science, engineering, cooking, or everyday tasks, our intuitive tool provides fast and accurate results across various categories.
+        </p>
+        <UnitConverter />
+         {/* Potential future ad slot area - styled minimally for now */}
+         {/* <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
+            (Future Ad Area)
+         </div> */}
+      </main>
+    </>
   );
 }

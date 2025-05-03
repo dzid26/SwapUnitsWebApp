@@ -11,27 +11,32 @@ interface PresetListProps {
 
 export function PresetList({ onPresetSelect }: PresetListProps) {
     return (
-        <Card className="shadow-lg">
+        // Add aria-label for better context
+        <Card className="shadow-lg" aria-label="Common Unit Conversion Presets">
             <CardHeader>
+                {/* Use H2 for secondary headings on the page */}
                 <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
-                    <List className="h-5 w-5" />
+                    <List className="h-5 w-5" aria-hidden="true" />
                     Common Presets
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 {/* Removed ScrollArea and fixed height */}
-                <div className="space-y-2">
+                {/* Use a list for semantic structure */}
+                <ul className="space-y-2">
                     {presets.map((preset, index) => (
-                        <Button
-                            key={index}
-                            variant="ghost"
-                            className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-accent/10"
-                            onClick={() => onPresetSelect(preset)}
-                        >
-                            {preset.name}
-                        </Button>
+                        <li key={index}> {/* Wrap button in li */}
+                          <Button
+                              variant="ghost"
+                              className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-accent/10"
+                              onClick={() => onPresetSelect(preset)}
+                              aria-label={`Select preset: ${preset.name}`} // More descriptive label
+                          >
+                              {preset.name}
+                          </Button>
+                        </li>
                     ))}
-                </div>
+                </ul>
             </CardContent>
         </Card>
     );

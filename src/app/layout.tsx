@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google"; // Using Inter font
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Use Inter font - known for readability
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "Unitopia",
-  description: "Engineering Units Converter",
+  title: "Unitopia | Free Online Unit Converter Tool",
+  description: "Instantly convert length, mass, temperature, time, pressure, area, volume, and energy units with Unitopia. Fast, free, and easy-to-use online converter.",
+  keywords: "unit converter, measurement converter, convert units, online converter, free converter, length, mass, temperature, time, pressure, area, volume, energy, metric, imperial, calculator",
 };
 
 export default function RootLayout({
@@ -26,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} antialiased font-sans`} // Apply Inter font
       >
         {children}
         <Toaster />
