@@ -107,7 +107,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                 title: "Copied!",
                 description: `Result "${textToCopy}" copied to clipboard.`,
                 variant: "confirmation", // Use confirmation (green) variant
-                duration: 3000, // Set duration to 3 seconds (3000ms)
+                duration: 1500, // Set duration to 1.5 seconds (1500ms)
             });
         } catch (err) {
             console.error('Failed to copy text: ', err);
