@@ -6,6 +6,7 @@ import Script from 'next/script';
 import { BookmarkButton } from '@/components/bookmark-button'; // Import the new component
 import { Toaster } from '@/components/ui/toaster'; // Import Toaster here
 import { RefreshCw } from 'lucide-react'; // Import swap/refresh icon
+import Link from 'next/link'; // Import Link
 
 // Page-specific metadata
 export const metadata: Metadata = {
@@ -63,16 +64,16 @@ export default function Home() {
       <header className="bg-background p-3 border-b flex items-center justify-between shadow-sm relative"> {/* Removed sticky and related classes */}
           {/* Spacer to help center the logo */}
           <div className="w-auto"></div>
-          {/* Centered Logo and Text */}
-          {/* Added 'group' class to enable group-hover effect on the icon */}
-          <div className="group flex items-center gap-2 absolute left-1/2 -translate-x-1/2 cursor-default">
+          {/* Centered Logo and Text - Wrapped in Link */}
+          {/* Removed 'cursor-default', added hover effect */}
+          <Link href="/" className="group flex items-center gap-2 absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity">
             {/* Added transition and group-hover:rotate-180 for animation */}
             <RefreshCw
               className="h-5 w-5 text-primary transition-transform duration-300 ease-in-out group-hover:rotate-180"
               aria-hidden="true"
             />
             <span className="font-bold text-lg text-foreground">UNITOPIA</span>
-          </div>
+          </Link>
           {/* Bookmark Button on the right */}
           <BookmarkButton />
       </header>
