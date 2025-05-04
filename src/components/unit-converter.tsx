@@ -431,10 +431,11 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                   <Button
                     type="button"
                     variant="outline"
-                    size="icon"
+                    // Removed size="icon", setting specific width/height
                     onClick={swapUnits}
                     disabled={!fromUnitValue || !toUnitValue}
-                    className="justify-self-center sm:justify-self-auto" // Removed mb-1, keep centering logic
+                    // Make wider on mobile (sm:w-10), keep height consistent
+                    className="justify-self-center sm:justify-self-auto h-10 w-full sm:w-10"
                     aria-label="Swap from and to units" // Descriptive aria-label
                   >
                     <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
