@@ -20,15 +20,16 @@ const formatNumber = (num: number, format: NumberFormat = 'normal'): string => {
         return '-'; // Indicator for invalid numbers
     }
     if (format === 'scientific') {
-        // Use scientific notation always if selected, let JS determine precision
+        // Use scientific notation always if selected, limit to 5 fractional digits
         // Replace 'e' with 'E'
-        return num.toExponential().replace('e', 'E');
+        return num.toExponential(5).replace('e', 'E');
     }
     // Default 'normal' formatting
     // Use exponential notation for very large or very small non-zero numbers
     // Let JS determine precision for exponential notation here too
     if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-6) && num !== 0) {
          // Replace 'e' with 'E'
+         // Use default precision for this automatic switch to exponential
         return num.toExponential().replace('e', 'E');
     }
     // Otherwise, format with commas and appropriate decimal places (up to 5)
