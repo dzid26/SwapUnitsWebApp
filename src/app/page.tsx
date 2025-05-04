@@ -59,8 +59,8 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 border-b flex items-center justify-between shadow-sm">
+      {/* Non-Sticky Header */}
+      <header className="bg-background p-3 border-b flex items-center justify-between shadow-sm relative"> {/* Removed sticky and related classes */}
           {/* Spacer to help center the logo */}
           <div className="w-auto"></div>
           {/* Centered Logo and Text */}
@@ -74,11 +74,11 @@ export default function Home() {
 
 
       {/* Use grid layout for ad placeholder and main content */}
-      {/* Removed min-h-screen from grid container, added padding top to account for sticky header */}
-      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto p-4 sm:p-8 md:p-12 lg:p-16 xl:p-20 pt-8 items-start">
+      {/* Removed padding top as header is no longer sticky */}
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto p-4 sm:p-8 md:p-12 lg:p-16 xl:p-20 items-start">
         {/* Left Sidebar Ad Placeholder - Optimized for 160x600 Skyscraper Ad */}
-        {/* Adjust sticky top to account for header height (approximate) */}
-        <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[calc(3.5rem+1rem)]"> {/* Header height (approx 3.5rem) + some gap (1rem) */}
+        {/* Adjusted sticky top to account for header height (approximate) */}
+        <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[1rem]"> {/* Adjusted sticky top */}
           {/* Content for the ad placeholder */}
           <div>Ad Placeholder (160x600)</div>
         </aside>
@@ -102,4 +102,3 @@ export default function Home() {
     </>
   );
 }
-
