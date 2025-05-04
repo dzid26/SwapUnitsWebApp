@@ -84,14 +84,14 @@ export function BookmarkButton() {
         aria-label="Add this page to your bookmarks"
         className="group inline-flex items-stretch h-9 p-0 overflow-hidden rounded-md border border-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" // Set height, remove padding, stretch items, add base styles manually
     >
-        {/* Icon Span */}
-        <span className="flex items-center justify-center px-2 transition-colors duration-150 group-hover:bg-accent group-hover:text-accent-foreground">
+        {/* Icon Span - Reduced padding */}
+        <span className="flex items-center justify-center px-1.5 transition-colors duration-150 group-hover:bg-accent group-hover:text-accent-foreground">
             <Bookmark className="h-4 w-4" />
         </span>
         {/* Divider */}
         <span className="w-px bg-border self-center my-1.5"></span> {/* Vertical divider, adjust margin for height */}
-        {/* Text Span - Apply standard text styles, hover style for outline text part */}
-        <span className="flex items-center px-3 text-sm text-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent-foreground"> {/* Text padding, inherit foreground, subtle bg hover */}
+        {/* Text Span - Reduced padding, removed hover background */}
+        <span className="flex items-center px-2 text-sm text-foreground transition-colors">
             Add to Bookmarks
         </span>
     </Button>
