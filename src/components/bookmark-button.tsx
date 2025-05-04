@@ -41,10 +41,10 @@ export function BookmarkButton() {
       variant: "success", // Use the success variant
       // Update title to include icon and new text
       title: (
-        <>
-          <Bookmark className="inline-block mr-2 h-4 w-4" aria-hidden="true" />
-          Add to Bookmarks
-        </>
+        <div className="flex items-center gap-2"> {/* Use flex container */}
+            <Bookmark className="h-4 w-4" aria-hidden="true" />
+            Add to Bookmarks
+        </div>
       ),
       description: `Press ${keyCombination} to bookmark this page.`,
       duration: 5000, // Show toast for 5 seconds
@@ -78,13 +78,22 @@ export function BookmarkButton() {
 
   return (
     <Button
-      variant="outline"
-      size="sm"
-      onClick={handleBookmarkClick}
-      aria-label="Add this page to your bookmarks"
+        variant="outline"
+        size="sm" // Keep for base styling but override padding/gap
+        onClick={handleBookmarkClick}
+        aria-label="Add this page to your bookmarks"
+        className="group inline-flex items-stretch h-9 p-0 overflow-hidden rounded-md border border-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" // Set height, remove padding, stretch items, add base styles manually
     >
-      <Bookmark className="mr-2 h-4 w-4" />
-      Add to Bookmarks
+        {/* Icon Span */}
+        <span className="flex items-center justify-center px-2 transition-colors duration-150 group-hover:bg-accent group-hover:text-accent-foreground">
+            <Bookmark className="h-4 w-4" />
+        </span>
+        {/* Divider */}
+        <span className="w-px bg-border self-center my-1.5"></span> {/* Vertical divider, adjust margin for height */}
+        {/* Text Span - Apply standard text styles, hover style for outline text part */}
+        <span className="flex items-center px-3 text-sm text-foreground transition-colors group-hover:bg-accent/10 group-hover:text-accent-foreground"> {/* Text padding, inherit foreground, subtle bg hover */}
+            Add to Bookmarks
+        </span>
     </Button>
   );
 }
