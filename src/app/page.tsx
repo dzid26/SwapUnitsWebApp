@@ -94,7 +94,8 @@ export default function Home() {
            <Toaster />
 
            {/* Optional: Add a brief introductory text before the converter */}
-           <p className="text-center text-muted-foreground mb-8 max-w-3xl">
+           {/* Changed text-center to text-left */}
+           <p className="text-left text-muted-foreground mb-8 max-w-3xl w-full">
              Welcome to Unitopia, your reliable partner for seamless unit conversions.
            </p>
            <UnitConverter />
