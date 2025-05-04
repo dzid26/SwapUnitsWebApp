@@ -434,7 +434,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                     size="icon"
                     onClick={swapUnits}
                     disabled={!fromUnitValue || !toUnitValue}
-                    className="mb-1" // Align vertically
+                    className="mb-1 justify-self-center sm:justify-self-auto" // Center on mobile, reset on sm+
                     aria-label="Swap from and to units" // Descriptive aria-label
                   >
                     <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
@@ -557,3 +557,4 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
 });
 
 UnitConverter.displayName = 'UnitConverter';
+
