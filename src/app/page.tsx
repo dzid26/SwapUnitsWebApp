@@ -1,9 +1,11 @@
 
+
 import { UnitConverter } from "@/components/unit-converter";
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { BookmarkButton } from '@/components/bookmark-button'; // Import the new component
 import { Toaster } from '@/components/ui/toaster'; // Import Toaster here
+import { RefreshCw } from 'lucide-react'; // Import swap/refresh icon
 
 // Page-specific metadata
 export const metadata: Metadata = {
@@ -57,8 +59,16 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Sticky Header for Bookmark Button */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 border-b flex justify-end shadow-sm">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 border-b flex items-center justify-between shadow-sm">
+          {/* Spacer to help center the logo */}
+          <div className="w-auto"></div>
+          {/* Centered Logo and Text */}
+          <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+            <RefreshCw className="h-5 w-5 text-primary" aria-hidden="true" />
+            <span className="font-bold text-lg text-foreground">UNITOPIA</span>
+          </div>
+          {/* Bookmark Button on the right */}
           <BookmarkButton />
       </header>
 
@@ -77,23 +87,19 @@ export default function Home() {
         <main className="flex flex-col items-center w-full order-2">
            {/* Toaster moved outside main content to be globally positioned */}
            <Toaster />
-           {/* Header Section with Title and Bookmark Button - REMOVED Button from here */}
-          {/* <div className="flex flex-col sm:flex-row justify-end items-center w-full mb-8 gap-4"> */}
-             {/* H1 Removed Here */}
-            {/* <BookmarkButton /> */} {/* Button moved to sticky header */}
-          {/* </div> */}
 
-          {/* Optional: Add a brief introductory text before the converter */}
-          <p className="text-center text-muted-foreground mb-8 max-w-3xl">
-            Welcome to Unitopia, your reliable partner for seamless unit conversions.
-          </p>
-          <UnitConverter />
-           {/* Potential future ad slot area - styled minimally for now */}
-           {/* <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
+           {/* Optional: Add a brief introductory text before the converter */}
+           <p className="text-center text-muted-foreground mb-8 max-w-3xl">
+             Welcome to Unitopia, your reliable partner for seamless unit conversions.
+           </p>
+           <UnitConverter />
+            {/* Potential future ad slot area - styled minimally for now */}
+            {/* <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
               (Future Ad Area)
-           </div> */}
+            </div> */}
         </main>
       </div>
     </>
   );
 }
+
