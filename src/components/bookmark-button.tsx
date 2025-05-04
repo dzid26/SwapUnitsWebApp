@@ -90,7 +90,7 @@ export function BookmarkButton() {
         </span>
         {/* Divider */}
         <span className="w-px bg-border self-center my-1.5"></span> {/* Vertical divider, adjust margin for height */}
-        {/* Text Span - Reduced padding, no hover effect */}
+        {/* Text Span - Reduced padding, no hover effect, added flex items-center */}
         <span className="flex items-center px-2 text-sm text-foreground transition-colors">
             Add to Bookmarks
         </span>
