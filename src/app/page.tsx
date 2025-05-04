@@ -64,8 +64,13 @@ export default function Home() {
           {/* Spacer to help center the logo */}
           <div className="w-auto"></div>
           {/* Centered Logo and Text */}
-          <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-            <RefreshCw className="h-5 w-5 text-primary" aria-hidden="true" />
+          {/* Added 'group' class to enable group-hover effect on the icon */}
+          <div className="group flex items-center gap-2 absolute left-1/2 -translate-x-1/2 cursor-default">
+            {/* Added transition and group-hover:rotate-180 for animation */}
+            <RefreshCw
+              className="h-5 w-5 text-primary transition-transform duration-300 ease-in-out group-hover:rotate-180"
+              aria-hidden="true"
+            />
             <span className="font-bold text-lg text-foreground">UNITOPIA</span>
           </div>
           {/* Bookmark Button on the right */}
