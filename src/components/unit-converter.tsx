@@ -394,7 +394,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
               {/* Unit Selectors and Swap Button */}
               {/* Conditionally render only when a category *form value* exists */}
               {currentCategory && (
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-end"> {/* Changed items-baseline to items-end */}
                   {/* From Unit */}
                   <FormField
                     control={form.control}
@@ -434,7 +434,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                     size="icon"
                     onClick={swapUnits}
                     disabled={!fromUnitValue || !toUnitValue}
-                    className="mb-1 justify-self-center sm:justify-self-auto" // Center on mobile, reset on sm+
+                    className="justify-self-center sm:justify-self-auto" // Removed mb-1, keep centering logic
                     aria-label="Swap from and to units" // Descriptive aria-label
                   >
                     <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
@@ -557,4 +557,3 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
 });
 
 UnitConverter.displayName = 'UnitConverter';
-
