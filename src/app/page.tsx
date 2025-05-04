@@ -1,6 +1,8 @@
+
 import { UnitConverter } from "@/components/unit-converter";
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { BookmarkButton } from '@/components/bookmark-button'; // Import the new component
 
 // Page-specific metadata
 export const metadata: Metadata = {
@@ -64,8 +66,13 @@ export default function Home() {
 
         {/* Main Content Area */}
         <main className="flex flex-col items-center w-full order-2">
+           {/* Header Section with Title and Bookmark Button */}
+          <div className="flex flex-col sm:flex-row justify-between items-center w-full mb-8 gap-4">
+            <h1 className="text-3xl font-bold text-center sm:text-left text-primary">Unitopia</h1>
+            <BookmarkButton /> {/* Add the bookmark button here */}
+          </div>
+
           {/* Optional: Add a brief introductory text before the converter */}
-          <h1 className="text-3xl font-bold text-center mb-4 text-primary">Unitopia</h1>
           <p className="text-center text-muted-foreground mb-8 max-w-3xl">
             Welcome to Unitopia, your reliable partner for seamless unit conversions. Whether you need to convert measurements for science, engineering, cooking, or everyday tasks, our intuitive tool provides fast and accurate results across various categories.
           </p>
