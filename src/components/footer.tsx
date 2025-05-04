@@ -40,18 +40,22 @@ export function Footer() {
 
   return (
     <footer className="w-full border-t bg-muted/40 mt-auto"> {/* Use mt-auto if layout uses flex column */}
-      <div className="container mx-auto py-6 px-4 md:px-6 text-center text-sm text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2">
-        <p>&copy; {currentYear} Unitopia. All rights reserved.</p>
-        {/* Display Visit Counter */}
-        <div>
+      {/* Updated layout: Centered copyright, counter on the right for sm+ */}
+      <div className="container mx-auto py-6 px-4 md:px-6 text-sm text-muted-foreground flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 relative">
+        {/* Centered Copyright Text */}
+        <p className="text-center sm:text-left">&copy; {currentYear} Unitopia. All rights reserved.</p>
+
+        {/* Visit Counter - Positioned on the right for sm+ screens */}
+        <div className="sm:absolute sm:right-4 md:right-6">
           {visitCount !== null ? (
-            <p>Visits: {visitCount.toLocaleString()}</p>
+            <p>Happy user conversions: {visitCount.toLocaleString()}</p> // Updated text
           ) : (
-            <p>Loading visits...</p> // Placeholder while loading
+            <p>Loading conversions...</p> // Placeholder while loading
           )}
         </div>
-        {/* Optional: Add more links if needed */}
-        {/* <div className="flex justify-center gap-4 mt-2">
+
+        {/* Optional: Add more links if needed - centered below on mobile */}
+        {/* <div className="flex justify-center gap-4 mt-2 sm:mt-0">
           <Link href="/privacy" className="hover:text-primary transition-colors">
             Privacy Policy
           </Link>
