@@ -79,18 +79,17 @@ export function BookmarkButton() {
   return (
     <Button
         variant="outline"
-        size="sm" // Keep for base styling but override padding/gap
+        size="icon" // Default to icon size for mobile
         onClick={handleBookmarkClick}
         aria-label="Add this page to your bookmarks"
-        className="group inline-flex items-stretch h-9 p-0 overflow-hidden rounded-md border border-input bg-background hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" // Set height, remove padding, stretch items, add base styles manually, explicitly set hover background
+        className="group inline-flex items-stretch h-9 w-9 md:w-auto md:px-0 overflow-hidden rounded-md border border-input bg-background hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" // Icon size default, auto width md+, adjust padding
     >
-        {/* Icon Span - Reduced padding, has hover effect */}
-        <span className="flex items-center justify-center px-1.5 transition-colors duration-150 group-hover:bg-accent group-hover:text-accent-foreground">
+        {/* Icon Span - Adjusted padding */}
+        <span className="flex items-center justify-center px-2 md:px-1.5 transition-colors duration-150 group-hover:bg-accent group-hover:text-accent-foreground"> {/* Slightly more padding on mobile */}
             <Bookmark className="h-4 w-4" />
         </span>
-        {/* Removed vertical divider span */}
-        {/* Text Span - Reduced padding, no hover effect, added flex items-center */}
-        <span className="flex items-center px-1.5 text-sm text-foreground transition-colors"> {/* Reduced padding from px-2 to px-1.5 */}
+        {/* Text Span - Hidden on mobile, shown on md+ */}
+        <span className="hidden md:flex items-center px-1.5 text-sm text-foreground transition-colors"> {/* hidden by default, flex on md */}
             Add to Bookmarks
         </span>
     </Button>
