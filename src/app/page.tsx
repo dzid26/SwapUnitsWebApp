@@ -93,11 +93,7 @@ export default function Home() {
            {/* Toaster moved outside main content to be globally positioned */}
            <Toaster />
 
-           {/* Optional: Add a brief introductory text before the converter */}
-           {/* Changed text-center to text-left */}
-           <p className="text-left text-muted-foreground mb-8 max-w-3xl w-full">
-             Welcome to Unitopia, your reliable partner for seamless unit conversions.
-           </p>
+           {/* Removed introductory paragraph */}
            <UnitConverter />
             {/* Potential future ad slot area - styled minimally for now */}
             {/* <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
