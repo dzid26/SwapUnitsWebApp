@@ -93,26 +93,28 @@ export const BookmarkButton = React.memo(function BookmarkButtonComponent() {
         aria-label="Add this page to your bookmarks"
         // Combined styles for button structure and hover effects
         // Ensure height matches header height for consistency (h-9)
-        // Remove group class if individual hover effects aren't needed
+        // Add group class for coordinated hover effects
         className={cn(
+            "group", // Add group class here
             "inline-flex items-stretch h-9 w-9 md:w-auto overflow-hidden rounded-md border border-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-            "hover:bg-background" // Prevent background change on hover for the whole button
+            "hover:bg-background" // Prevent background change on hover for the whole button itself
             )}
     >
         {/* Icon Span - Adjusted padding and hover effect */}
-        {/* Apply hover styles directly here */}
+        {/* Apply hover styles directly here using group-hover */}
         <span className={cn(
             "flex items-center justify-center px-2 transition-colors duration-150",
-            "hover:bg-accent hover:text-accent-foreground" // Hover effect only on icon span
+            // Change background/text on group hover (i.e., when hovering button or text)
+            "group-hover:bg-accent group-hover:text-accent-foreground"
             )}>
             <Bookmark className="h-4 w-4" />
         </span>
 
-        {/* Text Span - Hidden on mobile, shown on md+, no divider, specific padding */}
-        {/* Reduced padding-x */}
+        {/* Text Span - Hidden on mobile, shown on md+, specific padding */}
         <span className={cn(
             "hidden md:flex items-center px-1.5 text-sm text-foreground transition-colors", // hidden by default, flex on md, adjust padding
-            "hover:text-foreground" // Ensure text color doesn't change on hover
+            // Ensure text color doesn't change unexpectedly on hover
+            "hover:text-foreground group-hover:text-foreground"
             )}>
             Add to Bookmarks
         </span>
