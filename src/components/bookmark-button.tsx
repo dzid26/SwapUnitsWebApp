@@ -91,7 +91,7 @@ export function BookmarkButton() {
         {/* Divider */}
         <span className="w-px bg-border self-center my-1.5"></span> {/* Vertical divider, adjust margin for height */}
         {/* Text Span - Reduced padding, no hover effect, added flex items-center */}
-        <span className="flex items-center px-2 text-sm text-foreground transition-colors">
+        <span className="flex items-center px-1.5 text-sm text-foreground transition-colors"> {/* Reduced padding from px-2 to px-1.5 */}
             Add to Bookmarks
         </span>
     </Button>
