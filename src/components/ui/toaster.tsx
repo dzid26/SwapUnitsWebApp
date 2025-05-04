@@ -28,7 +28,8 @@ export function Toaster() {
                 {/* Orange Header */}
                 {/* Changed from text-center to flex for icon alignment */}
                 <div className="bg-accent text-accent-foreground p-3 rounded-t-md relative flex items-center justify-center gap-2">
-                  {title && <ToastTitle>{title}</ToastTitle>}
+                  {/* Apply text-base for larger font size */}
+                  {title && <ToastTitle className="text-base">{title}</ToastTitle>}
                    {/* Place Close button inside header for success variant */}
                    <ToastClose className="absolute right-1 top-1 group-[.success]:text-accent-foreground/70 group-[.success]:hover:text-accent-foreground" />
                 </div>
@@ -59,3 +60,4 @@ export function Toaster() {
     </ToastProvider>
   )
 }
+
