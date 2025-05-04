@@ -17,16 +17,15 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, variant, ...props }) {
-        // Check if the variant is success to apply custom structure
+        // Check if the variant is success (bookmark toast) to apply custom structure
         const isSuccessVariant = variant === 'success';
 
         return (
           <Toast key={id} variant={variant} {...props}>
             {isSuccessVariant ? (
-              // Custom structure for success variant
+              // Custom structure for success (bookmark) variant
               <div className="flex flex-col w-full">
                 {/* Orange Header */}
-                {/* Changed from text-center to flex for icon alignment */}
                 <div className="bg-accent text-accent-foreground p-3 rounded-t-md relative flex items-center justify-center gap-2">
                   {/* Apply text-base for larger font size */}
                   {title && <ToastTitle className="text-base">{title}</ToastTitle>}
@@ -34,7 +33,6 @@ export function Toaster() {
                    <ToastClose className="absolute right-1 top-1 group-[.success]:text-accent-foreground/70 group-[.success]:hover:text-accent-foreground" />
                 </div>
                 {/* White Body */}
-                {/* Added text-center to center the description */}
                 <div className="p-4 pt-3 grid gap-1 text-center">
                   {description && <ToastDescription>{description}</ToastDescription>}
                    {/* Action button remains in the body */}
@@ -42,16 +40,14 @@ export function Toaster() {
                 </div>
               </div>
             ) : (
-              // Default structure for other variants
-              <>
-                <div className="grid gap-1 p-6 pr-8"> {/* Apply default padding here */}
-                  {title && <ToastTitle>{title}</ToastTitle>}
-                  {description && <ToastDescription>{description}</ToastDescription>}
-                </div>
-                 {/* Action and Close remain outside the grid for default */}
-                {action}
+              // Default structure for other variants (default, destructive, confirmation)
+              // Confirmation variant uses this structure but with green styling from toast.tsx
+              <div className="grid gap-1 p-6 pr-8"> {/* Apply default padding here */}
+                {title && <ToastTitle>{title}</ToastTitle>}
+                {description && <ToastDescription>{description}</ToastDescription>}
+                {action && <div className="mt-2">{action}</div>} {/* Optionally add margin to action */}
                 <ToastClose />
-              </>
+              </div>
             )}
           </Toast>
         )
@@ -60,4 +56,3 @@ export function Toaster() {
     </ToastProvider>
   )
 }
-

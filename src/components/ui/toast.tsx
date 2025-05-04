@@ -35,8 +35,10 @@ const toastVariants = cva(
         default: "border bg-background text-foreground", // Default padding applied in toaster
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground", // Default padding applied in toaster
-        success: // Changed: Use background for main body, border might be accent or secondary
-          "success group border-accent bg-background text-foreground", // Orange border, white body
+        success: // Kept for bookmark toast: Orange border/header, white body
+          "success group border-accent bg-background text-foreground",
+        confirmation: // New variant for copy confirmation: Green background
+          "confirmation group border-secondary/50 bg-secondary text-secondary-foreground",
       },
     },
     defaultVariants: {
@@ -74,6 +76,8 @@ const ToastAction = React.forwardRef<
       "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
       // Success variant action button - style for white body
       "group-[.success]:border-input group-[.success]:hover:bg-accent group-[.success]:hover:text-accent-foreground group-[.success]:focus:ring-ring",
+      // Confirmation variant action button - style for green body
+      "group-[.confirmation]:border-muted/40 group-[.confirmation]:hover:border-secondary/30 group-[.confirmation]:hover:bg-background group-[.confirmation]:hover:text-secondary group-[.confirmation]:focus:ring-secondary",
       className
     )}
     {...props}
@@ -92,8 +96,9 @@ const ToastClose = React.forwardRef<
       // Adjusted close button colors for variants
       "group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
       // Success variant close button - needs different color for orange header vs white body
-      // Style potentially needs adjustment based on where it's placed (in toaster)
       "group-[.success]:text-accent-foreground/70 group-[.success]:hover:text-accent-foreground group-[.success]:focus:ring-accent", // Assuming it's placed in the orange header
+      // Confirmation variant close button
+      "group-[.confirmation]:text-secondary-foreground/70 group-[.confirmation]:hover:text-secondary-foreground group-[.confirmation]:focus:ring-secondary",
       className
     )}
     toast-close=""

@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { ConversionResult, NumberFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button'; // Import Button
-import { Copy } from 'lucide-react'; // Import Copy icon
+import { Copy, Check } from 'lucide-react'; // Import Copy and Check icons
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 interface ConversionDisplayProps {
@@ -103,9 +103,13 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
         try {
             await navigator.clipboard.writeText(textToCopy);
             toast({
-                title: "Copied!",
+                title: (
+                    <div className="flex items-center gap-2">
+                         <Check className="h-4 w-4" /> Copied!
+                    </div>
+                ),
                 description: `Result "${textToCopy}" copied to clipboard.`,
-                variant: "default", // Use default (blueish) for confirmation
+                variant: "confirmation", // Use confirmation (green) variant
             });
         } catch (err) {
             console.error('Failed to copy text: ', err);
@@ -177,3 +181,4 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
 });
 
 ConversionDisplay.displayName = 'ConversionDisplay';
+
