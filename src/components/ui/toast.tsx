@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,15 +27,16 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+  // Base styles: remove padding here as it will be handled conditionally in toaster.tsx
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
+        default: "border bg-background text-foreground", // Default padding applied in toaster
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
-        success: // Added success variant
-          "success group border-secondary/50 bg-secondary text-secondary-foreground",
+          "destructive group border-destructive bg-destructive text-destructive-foreground", // Default padding applied in toaster
+        success: // Changed: Use background for main body, border might be accent or secondary
+          "success group border-accent bg-background text-foreground", // Orange border, white body
       },
     },
     defaultVariants: {
@@ -47,13 +49,17 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+>(({ className, variant, children, ...props }, ref) => { // Accept children
   return (
     <ToastPrimitives.Root
       ref={ref}
+      // Remove explicit padding here, apply variant classes
       className={cn(toastVariants({ variant }), className)}
       {...props}
-    />
+    >
+        {/* Render children passed from Toaster */}
+        {children}
+    </ToastPrimitives.Root>
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName
@@ -66,8 +72,8 @@ const ToastAction = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
-      // Added styles for success variant action button if needed, otherwise defaults are usually fine
-      "group-[.success]:border-muted/40 group-[.success]:hover:border-secondary/30 group-[.success]:hover:bg-background group-[.success]:hover:text-secondary group-[.success]:focus:ring-secondary",
+      // Success variant action button - style for white body
+      "group-[.success]:border-input group-[.success]:hover:bg-accent group-[.success]:hover:text-accent-foreground group-[.success]:focus:ring-ring",
       className
     )}
     {...props}
@@ -85,7 +91,9 @@ const ToastClose = React.forwardRef<
       "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
       // Adjusted close button colors for variants
       "group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
-      "group-[.success]:text-green-100 group-[.success]:hover:text-white group-[.success]:focus:ring-green-400 group-[.success]:focus:ring-offset-green-600",
+      // Success variant close button - needs different color for orange header vs white body
+      // Style potentially needs adjustment based on where it's placed (in toaster)
+      "group-[.success]:text-accent-foreground/70 group-[.success]:hover:text-accent-foreground group-[.success]:focus:ring-accent", // Assuming it's placed in the orange header
       className
     )}
     toast-close=""
@@ -102,6 +110,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
+    // Style potentially adjusted based on context (header vs body)
     className={cn("text-sm font-semibold", className)}
     {...props}
   />
@@ -114,6 +123,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
+    // Style potentially adjusted based on context (header vs body)
     className={cn("text-sm opacity-90", className)}
     {...props}
   />
