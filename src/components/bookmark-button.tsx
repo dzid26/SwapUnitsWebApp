@@ -56,7 +56,7 @@ export const BookmarkButton = React.memo(function BookmarkButtonComponent() {
         </div>
       ),
       description: toastDescription, // Use the conditional description
-      duration: 7000, // Show toast for 7 seconds (longer for mobile instructions)
+      duration: 3000, // Show toast for 3 seconds (3000ms)
     });
 
     // NOTE: Programmatically triggering the browser's bookmark dialog (like simulating Ctrl+D)
@@ -123,3 +123,4 @@ export const BookmarkButton = React.memo(function BookmarkButtonComponent() {
 });
 
 BookmarkButton.displayName = 'BookmarkButton';
+
