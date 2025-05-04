@@ -85,7 +85,7 @@ export default function Home() {
 
           {/* Optional: Add a brief introductory text before the converter */}
           <p className="text-center text-muted-foreground mb-8 max-w-3xl">
-            Welcome to Unitopia, your reliable partner for seamless unit conversions. Whether you need to convert measurements for science, engineering, cooking, or everyday tasks, our intuitive tool provides fast and accurate results across various categories.
+            Welcome to Unitopia, your reliable partner for seamless unit conversions.
           </p>
           <UnitConverter />
            {/* Potential future ad slot area - styled minimally for now */}
