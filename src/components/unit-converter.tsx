@@ -36,6 +36,7 @@ import { UnitIcon } from "./unit-icon";
 import { ConversionDisplay } from "./conversion-display";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 
 
 // Schema allows empty string or a valid number (positive or not, allowing intermediates)
@@ -61,6 +62,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
   const [conversionResult, setConversionResult] = React.useState<ConversionResult | null>(null);
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1); // Default value to 1
   const [numberFormat, setNumberFormat] = React.useState<NumberFormat>('normal'); // Default format
+  const isMobile = useIsMobile(); // Use the hook
 
 
   const form = useForm<FormData>({
@@ -358,7 +360,8 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
               className="h-6 w-6"
               aria-hidden="true" // Hide decorative icon from screen readers
             />
-            Unitopia - Versatile Unit Converter
+            {/* Conditionally render title based on mobile view */}
+            {isMobile ? 'Unitopia - Unit Converter' : 'Unitopia - Versatile Unit Converter'}
           </CardTitle>
            {/* Use paragraph for description */}
            <p className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
