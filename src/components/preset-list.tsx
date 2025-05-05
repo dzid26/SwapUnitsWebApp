@@ -27,8 +27,8 @@ export const PresetList = React.memo(function PresetListComponent({ onPresetSele
                 {/* Removed ScrollArea and fixed height */}
                 {/* Use a list for semantic structure */}
                 <ul className="space-y-2">
-                    {/* Limit the displayed presets to the first 14 */}
-                    {presets.slice(0, 14).map((preset, index) => (
+                    {/* Limit the displayed presets to the first 15 */}
+                    {presets.slice(0, 15).map((preset, index) => (
                         <li key={index}> {/* Wrap button in li */}
                           <Button
                               variant="ghost"
