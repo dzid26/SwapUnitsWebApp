@@ -81,8 +81,8 @@ export default function Home() {
 
 
       {/* Use grid layout for ad placeholder and main content */}
-      {/* Removed padding top as header is no longer sticky */}
-      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto p-4 sm:p-8 md:p-12 lg:p-16 xl:p-20 items-start min-h-screen"> {/* Added min-h-screen to push footer down */}
+      {/* Halved the top padding: p-4 -> pt-2, sm:p-8 -> sm:pt-4, etc. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20 items-start min-h-screen"> {/* Added min-h-screen to push footer down */}
         {/* Left Sidebar Ad Placeholder - Optimized for 160x600 Skyscraper Ad */}
         {/* Adjusted sticky top to account for header height (approximate) */}
         <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[1rem]"> {/* Adjusted sticky top */}
