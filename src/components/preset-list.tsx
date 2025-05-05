@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { presets } from "@/lib/unit-data";
+import { presets as allPresets } from "@/lib/unit-data"; // Renamed import
 import { type Preset, type UnitCategory } from '@/types'; // Import UnitCategory type
 import { List } from 'lucide-react';
 import { UnitIcon } from './unit-icon'; // Import the UnitIcon component
@@ -11,8 +11,28 @@ interface PresetListProps {
     onPresetSelect: (preset: Preset) => void;
 }
 
+// Function to filter and limit presets
+const getFilteredPresets = (): Preset[] => {
+    const presetsByCategory: Record<string, Preset[]> = {};
+    allPresets.forEach(preset => {
+        if (!presetsByCategory[preset.category]) {
+            presetsByCategory[preset.category] = [];
+        }
+        if (presetsByCategory[preset.category].length < 2) {
+            presetsByCategory[preset.category].push(preset);
+        }
+    });
+
+    // Flatten the grouped presets and limit to 15
+    const filtered = Object.values(presetsByCategory).flat();
+    return filtered.slice(0, 15);
+};
+
 // Memoize the component to prevent unnecessary re-renders
 export const PresetList = React.memo(function PresetListComponent({ onPresetSelect }: PresetListProps) {
+    // Get the filtered list of presets
+    const displayPresets = React.useMemo(() => getFilteredPresets(), []);
+
     return (
         // Add aria-label for better context
         <Card className="shadow-lg" aria-label="Common Unit Conversion Presets">
@@ -27,8 +47,8 @@ export const PresetList = React.memo(function PresetListComponent({ onPresetSele
                 {/* Removed ScrollArea and fixed height */}
                 {/* Use a list for semantic structure */}
                 <ul className="space-y-2">
-                    {/* Limit the displayed presets to the first 15 */}
-                    {presets.slice(0, 15).map((preset, index) => (
+                    {/* Map over the filtered and limited presets */}
+                    {displayPresets.map((preset, index) => (
                         <li key={index}> {/* Wrap button in li */}
                           <Button
                               variant="ghost"
