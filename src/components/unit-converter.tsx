@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -28,6 +29,7 @@ import { unitData } from "@/lib/unit-data";
 import type { UnitCategory, Unit, ConversionResult, Preset, NumberFormat } from "@/types";
 import {
   ArrowRightLeft,
+  FlaskConical, // Import the FlaskConical icon
 } from "lucide-react";
 import { PresetList } from "./preset-list";
 import { UnitIcon } from "./unit-icon";
@@ -310,25 +312,11 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
         <CardHeader>
           {/* Use H1 for the main title of the component/page section */}
           <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2">
-             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            {/* Replace inline SVG with FlaskConical icon */}
+            <FlaskConical
               className="h-6 w-6"
               aria-hidden="true" // Hide decorative icon from screen readers
-            >
-              <path d="M21.178 14.147a1.5 1.5 0 0 0-2.356-2.356l-2.97 2.97a1.5 1.5 0 0 0 2.356 2.356l2.97-2.97Z"/>
-              <path d="m17 10-1.5 1.5"/>
-              <path d="M5 5h2v2"/>
-              <path d="M17.03 7H12V2h5.031a1.969 1.969 0 0 1 2 1.969V7Z"/>
-              <path d="M9 14a5 5 0 1 0 0-10H4v10a5 5 0 0 0 5 5h2V9.97"/>
-              <path d="M17 17v-2h-2"/>
-              <path d="M7.03 17H12v5H7.031a1.969 1.969 0 0 1-2-1.969V17Z"/>
-            </svg>
+            />
             Unitopia - Versatile Unit Converter
           </CardTitle>
            {/* Use paragraph for description */}
