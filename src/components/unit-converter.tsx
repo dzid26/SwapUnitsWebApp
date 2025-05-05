@@ -128,6 +128,31 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
       return isFinite(resultValue) ? { value: resultValue, unit: toUnitData.symbol } : null;
     }
 
+    // --- Fuel Economy Conversion (Special Handling) ---
+    if (category === "Fuel Economy") {
+        let valueInKmPerL: number;
+
+        // Convert input to base unit (km/L)
+        if (fromUnitData.symbol === 'L/100km') {
+            if (numericValue === 0) return null; // Avoid division by zero
+            valueInKmPerL = fromUnitData.factor / numericValue; // Inverse relationship
+        } else {
+            valueInKmPerL = numericValue * fromUnitData.factor;
+        }
+
+        // Convert base unit (km/L) to target unit
+        let resultValue: number;
+        if (toUnitData.symbol === 'L/100km') {
+            if (valueInKmPerL === 0) return null; // Avoid division by zero
+            resultValue = toUnitData.factor / valueInKmPerL; // Inverse relationship
+        } else {
+            resultValue = valueInKmPerL / toUnitData.factor;
+        }
+
+        return isFinite(resultValue) ? { value: resultValue, unit: toUnitData.symbol } : null;
+    }
+
+
     // --- General Conversion (Factor-Based) ---
     const valueInBaseUnit = numericValue * fromUnitData.factor;
     const resultValue = valueInBaseUnit / toUnitData.factor;
@@ -185,6 +210,22 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
             case 'Energy':
                 defaultFromUnit = units.find(u => u.symbol === 'J')?.symbol ?? units[0]?.symbol ?? "";
                 defaultToUnit = units.find(u => u.symbol === 'kJ')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // J to kJ
+                break;
+            case 'Speed':
+                defaultFromUnit = units.find(u => u.symbol === 'm/s')?.symbol ?? units[0]?.symbol ?? "";
+                defaultToUnit = units.find(u => u.symbol === 'km/h')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // m/s to km/h
+                break;
+            case 'Fuel Economy':
+                defaultFromUnit = units.find(u => u.symbol === 'km/L')?.symbol ?? units[0]?.symbol ?? "";
+                defaultToUnit = units.find(u => u.symbol === 'MPG (US)')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // km/L to MPG (US)
+                break;
+            case 'Data Storage':
+                defaultFromUnit = units.find(u => u.symbol === 'GB')?.symbol ?? units[0]?.symbol ?? "";
+                defaultToUnit = units.find(u => u.symbol === 'MB')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // GB to MB
+                break;
+            case 'Data Transfer Rate':
+                defaultFromUnit = units.find(u => u.symbol === 'Mbps')?.symbol ?? units[0]?.symbol ?? "";
+                defaultToUnit = units.find(u => u.symbol === 'MB/s')?.symbol ?? units[1]?.symbol ?? defaultFromUnit; // Mbps to MB/s
                 break;
             // No default case needed as fallbacks are handled above
         }

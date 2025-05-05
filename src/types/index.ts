@@ -14,7 +14,11 @@ export type UnitCategory =
   | 'Pressure'
   | 'Area'
   | 'Volume'
-  | 'Energy';
+  | 'Energy'
+  | 'Speed'
+  | 'Fuel Economy'
+  | 'Data Storage'
+  | 'Data Transfer Rate';
 
 
 export type UnitData = {

@@ -1,5 +1,19 @@
 import type { UnitCategory, UnitData, Preset } from '@/types';
 
+// Base units:
+// Length: Meter (m)
+// Mass: Kilogram (kg)
+// Temperature: Celsius (°C) - Special handling
+// Time: Second (s)
+// Pressure: Pascal (Pa)
+// Area: Square Meter (m²)
+// Volume: Cubic Meter (m³)
+// Energy: Joule (J)
+// Speed: Meter per second (m/s)
+// Fuel Economy: Kilometer per Liter (km/L) - Note: Higher is better
+// Data Storage: Byte (B)
+// Data Transfer Rate: Bits per second (bps)
+
 export const unitData: Record<UnitCategory, UnitData> = {
   Length: {
     name: 'Length',
@@ -103,9 +117,64 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Foot-pound', symbol: 'ft⋅lb', factor: 1.35582 },
         ],
     },
+    Speed: {
+        name: 'Speed',
+        units: [
+            { name: 'Meter per second', symbol: 'm/s', factor: 1 },
+            { name: 'Kilometer per hour', symbol: 'km/h', factor: 1 / 3.6 },
+            { name: 'Mile per hour', symbol: 'mph', factor: 0.44704 },
+            { name: 'Foot per second', symbol: 'ft/s', factor: 0.3048 },
+            { name: 'Knot', symbol: 'kn', factor: 0.514444 }, // Nautical mile per hour
+        ],
+    },
+    'Fuel Economy': {
+        name: 'Fuel Economy',
+        // Base unit: Kilometer per Liter (km/L) - Higher is better
+        // Note: L/100km is inverse, so conversion requires 1/x calculation
+        // Factor here converts *from* the unit *to* km/L
+        units: [
+            { name: 'Kilometer per Liter', symbol: 'km/L', factor: 1 },
+            { name: 'Liter per 100 kilometers', symbol: 'L/100km', factor: 100 }, // Special handling needed: result = factor / value
+            { name: 'Mile per Gallon (US)', symbol: 'MPG (US)', factor: 0.425144 }, // 1 MPG ≈ 0.425144 km/L
+            { name: 'Mile per Gallon (UK)', symbol: 'MPG (UK)', factor: 0.354006 }, // 1 MPG Imp ≈ 0.354006 km/L
+        ],
+    },
+    'Data Storage': {
+        name: 'Data Storage',
+        // Base unit: Byte (B)
+        // Using IEC standard (powers of 1024)
+        units: [
+            { name: 'Bit', symbol: 'bit', factor: 1 / 8 },
+            { name: 'Byte', symbol: 'B', factor: 1 },
+            { name: 'Kilobyte', symbol: 'KB', factor: 1024 },
+            { name: 'Megabyte', symbol: 'MB', factor: 1024 ** 2 },
+            { name: 'Gigabyte', symbol: 'GB', factor: 1024 ** 3 },
+            { name: 'Terabyte', symbol: 'TB', factor: 1024 ** 4 },
+            { name: 'Petabyte', symbol: 'PB', factor: 1024 ** 5 },
+            // Kibibyte, Mebibyte etc. could be added if needed (KiB, MiB)
+        ],
+    },
+    'Data Transfer Rate': {
+        name: 'Data Transfer Rate',
+        // Base unit: Bits per second (bps)
+        units: [
+            { name: 'Bits per second', symbol: 'bps', factor: 1 },
+            { name: 'Kilobits per second', symbol: 'Kbps', factor: 1000 },
+            { name: 'Megabits per second', symbol: 'Mbps', factor: 1e6 },
+            { name: 'Gigabits per second', symbol: 'Gbps', factor: 1e9 },
+            { name: 'Terabits per second', symbol: 'Tbps', factor: 1e12 },
+            { name: 'Bytes per second', symbol: 'B/s', factor: 8 },
+            { name: 'Kilobytes per second', symbol: 'KB/s', factor: 8 * 1000 }, // Often uses 1000 for rates
+            { name: 'Megabytes per second', symbol: 'MB/s', factor: 8 * 1e6 },
+            { name: 'Gigabytes per second', symbol: 'GB/s', factor: 8 * 1e9 },
+            { name: 'Terabytes per second', symbol: 'TB/s', factor: 8 * 1e12 },
+            // Kibibits, Mebibits etc. could be added if needed (Kibps, Mibps)
+        ],
+    },
 };
 
 export const presets: Preset[] = [
+  // Existing presets...
   { category: 'Length', fromUnit: 'm', toUnit: 'ft', name: 'Meter to Feet' },
   { category: 'Length', fromUnit: 'km', toUnit: 'mi', name: 'Kilometer to Miles' },
   { category: 'Length', fromUnit: 'in', toUnit: 'cm', name: 'Inches to Centimeters' },
@@ -120,4 +189,14 @@ export const presets: Preset[] = [
   { category: 'Area', fromUnit: 'm²', toUnit: 'ft²', name: 'Square Meters to Square Feet' },
   { category: 'Volume', fromUnit: 'L', toUnit: 'gal', name: 'Liters to Gallons (US)' },
   { category: 'Energy', fromUnit: 'kWh', toUnit: 'BTU', name: 'Kilowatt Hours to BTU' },
+
+  // New presets
+  { category: 'Speed', fromUnit: 'km/h', toUnit: 'mph', name: 'km/h to mph' },
+  { category: 'Speed', fromUnit: 'm/s', toUnit: 'km/h', name: 'm/s to km/h' },
+  { category: 'Fuel Economy', fromUnit: 'MPG (US)', toUnit: 'km/L', name: 'MPG (US) to km/L' },
+  { category: 'Fuel Economy', fromUnit: 'L/100km', toUnit: 'MPG (US)', name: 'L/100km to MPG (US)' },
+  { category: 'Data Storage', fromUnit: 'MB', toUnit: 'KB', name: 'Megabytes to Kilobytes' },
+  { category: 'Data Storage', fromUnit: 'GB', toUnit: 'MB', name: 'Gigabytes to Megabytes' },
+  { category: 'Data Transfer Rate', fromUnit: 'Mbps', toUnit: 'MB/s', name: 'Mbps to MB/s' },
+  { category: 'Data Transfer Rate', fromUnit: 'Gbps', toUnit: 'Mbps', name: 'Gbps to Mbps' },
 ];

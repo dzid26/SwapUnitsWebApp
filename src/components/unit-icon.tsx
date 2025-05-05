@@ -9,6 +9,11 @@ import {
   Waves, // Using Waves for Volume as Cube isn't available
   CloudLightning, // Using CloudLightning for Energy as Bolt isn't available
   HelpCircle, // Default icon
+  // New icons
+  GaugeCircle, // For Speed
+  Fuel, // For Fuel Economy
+  HardDrive, // For Data Storage
+  Network, // For Data Transfer Rate (or Wifi)
 } from 'lucide-react';
 import type { UnitCategory } from '@/types';
 
@@ -35,6 +40,14 @@ export const UnitIcon = React.memo(function UnitIconComponent({ category, ...pro
         return <Waves {...props} />; // Using Waves as a placeholder
     case 'Energy':
         return <CloudLightning {...props} />; // Using CloudLightning as a placeholder
+    case 'Speed':
+        return <GaugeCircle {...props} />;
+    case 'Fuel Economy':
+        return <Fuel {...props} />;
+    case 'Data Storage':
+        return <HardDrive {...props} />;
+    case 'Data Transfer Rate':
+        return <Network {...props} />;
     default:
       return <HelpCircle {...props} />;
   }
