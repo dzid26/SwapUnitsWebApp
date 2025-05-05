@@ -4,23 +4,31 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { ConversionResult, NumberFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button'; // Import Button
-import { Copy, Check } from 'lucide-react'; // Import Copy and Check icons
+import { Copy } from 'lucide-react'; // Import Copy icon
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 interface ConversionDisplayProps {
     fromValue: number | undefined; // Can be undefined if input is invalid/empty
     fromUnit: string;
     result: ConversionResult | null;
-    format?: NumberFormat; // Add format prop, default to 'normal'
+    format: NumberFormat; // Add format prop
+    onActualFormatChange: (actualFormat: NumberFormat) => void; // Callback to sync UI
 }
 
-// Helper function for number formatting
-const formatNumber = (num: number, format: NumberFormat = 'normal'): string => {
+// Helper function for number formatting - now returns object with actual format
+const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): { formattedString: string; actualFormatUsed: NumberFormat } => {
     if (!isFinite(num)) {
-        return '-'; // Indicator for invalid numbers
+        return { formattedString: '-', actualFormatUsed: requestedFormat }; // Indicator for invalid numbers
     }
-    if (format === 'scientific') {
-        // Use scientific notation always if selected, limit to 7 fractional digits
+
+    let actualFormatUsed: NumberFormat = requestedFormat;
+    let formattedString: string;
+
+    const useScientificDueToMagnitude = (Math.abs(num) > 1e9 || Math.abs(num) < 1e-7) && num !== 0;
+
+    if (requestedFormat === 'scientific' || useScientificDueToMagnitude) {
+        actualFormatUsed = 'scientific';
+        // Use scientific notation always if selected or needed due to magnitude, limit to 7 fractional digits
         let exponential = num.toExponential(7).replace('e', 'E');
         // Refine: Remove trailing zeros after decimal, and the decimal itself if no digits follow
         const match = exponential.match(/^(-?\d(?:\.\d*)?)(0*)(E[+-]\d+)$/);
@@ -35,38 +43,28 @@ const formatNumber = (num: number, format: NumberFormat = 'normal'): string => {
                 // If it now ends with just the decimal point, remove it
                 coefficient = coefficient.replace(/\.$/, '');
             }
-            return coefficient + exponent;
+            formattedString = coefficient + exponent;
+        } else {
+            // Fallback if regex fails (shouldn't normally happen with toExponential)
+            formattedString = exponential;
         }
-        // Fallback if regex fails (shouldn't normally happen with toExponential)
-        return exponential;
+    } else {
+        // Default 'normal' formatting
+        actualFormatUsed = 'normal';
+        // Format with commas and appropriate decimal places (up to 7)
+        formattedString = num.toLocaleString(undefined, { maximumFractionDigits: 7 });
     }
-    // Default 'normal' formatting
-    // Use exponential notation for very large or very small non-zero numbers
-    if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-7) && num !== 0) {
-         // Use 7 fractional digits for consistency, remove trailing zeros
-         let exponential = num.toExponential(7).replace('e', 'E');
-         const match = exponential.match(/^(-?\d(?:\.\d*)?)(0*)(E[+-]\d+)$/);
-         if (match) {
-             let coefficient = match[1];
-             const exponent = match[3];
-             if (coefficient.includes('.')) {
-                 coefficient = coefficient.replace(/0+$/, '');
-                 coefficient = coefficient.replace(/\.$/, '');
-             }
-             return coefficient + exponent;
-         }
-         return exponential; // Fallback
-    }
-    // Otherwise, format with commas and appropriate decimal places (up to 7)
-    return num.toLocaleString(undefined, { maximumFractionDigits: 7 });
+
+    return { formattedString, actualFormatUsed };
 };
 
-// Helper function to format the 'from' value display (always normal format)
+
+// Helper function to format the 'from' value display (always normal format, doesn't affect radio buttons)
 const formatFromValue = (num: number | undefined): string => {
     if (num === undefined || !isFinite(num)) {
         return '-';
     }
-    // Always use 'normal' formatting for the input value display
+    // Always use 'normal' formatting logic for the input value display
     if ((Math.abs(num) > 1e9 || Math.abs(num) < 1e-7) && num !== 0) {
         // Use 7 fractional digits for consistency, remove trailing zeros
         let exponential = num.toExponential(7).replace('e', 'E');
@@ -87,14 +85,29 @@ const formatFromValue = (num: number | undefined): string => {
 };
 
 // Memoize the component to prevent re-renders if props haven't changed
-export const ConversionDisplay = React.memo(function ConversionDisplayComponent({ fromValue, fromUnit, result, format = 'normal' }: ConversionDisplayProps) {
+export const ConversionDisplay = React.memo(function ConversionDisplayComponent({ fromValue, fromUnit, result, format, onActualFormatChange }: ConversionDisplayProps) {
     const { toast } = useToast(); // Initialize toast hook
 
     // Determine if we should show the placeholder state
     const showPlaceholder = fromValue === undefined || fromUnit === '' || !result;
 
+    // Format the result and get the actual format used
+    const { formattedString: formattedResultString, actualFormatUsed } = React.useMemo(() => {
+        return showPlaceholder ? { formattedString: '-', actualFormatUsed: format } : formatNumber(result.value, format);
+    }, [showPlaceholder, result, format]);
+
+    // Effect to sync the radio button if the actual format differs from the requested 'normal' format
+    React.useEffect(() => {
+        // Only trigger if 'normal' was requested but 'scientific' was used due to magnitude
+        if (format === 'normal' && actualFormatUsed === 'scientific') {
+            onActualFormatChange('scientific');
+        }
+        // No need to trigger if format is already 'scientific' or if 'normal' was requested and used
+    }, [format, actualFormatUsed, onActualFormatChange]);
+
+
     // Text to be copied (only the result value and unit)
-    const textToCopy = showPlaceholder ? '' : `${formatNumber(result.value, format)} ${result.unit}`;
+    const textToCopy = showPlaceholder ? '' : `${formattedResultString} ${result.unit}`;
 
     // Copy handler using useCallback to prevent recreation on every render
     const handleCopy = React.useCallback(async () => {
@@ -103,7 +116,6 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
         try {
             await navigator.clipboard.writeText(textToCopy);
             toast({
-                // Remove Check icon here, Toaster component handles it for confirmation variant
                 title: "Copied!",
                 description: `Result "${textToCopy}" copied to clipboard.`,
                 variant: "confirmation", // Use confirmation (green) variant
@@ -123,7 +135,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
     // Prepare the text content for screen readers
     const screenReaderText = showPlaceholder
         ? (fromValue !== undefined && fromUnit ? `Waiting for conversion of ${formatFromValue(fromValue)} ${fromUnit}` : 'Enter a value and select units to convert')
-        : `${formatFromValue(fromValue!)} ${fromUnit} equals ${formatNumber(result.value, format)} ${result.unit}`;
+        : `${formatFromValue(fromValue!)} ${fromUnit} equals ${formattedResultString} ${result.unit}`;
 
     return (
         <> {/* Wrap multiple sibling elements in a Fragment */}
@@ -152,7 +164,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                              )}>
                                {showPlaceholder ? '-' : (
                                     <>
-                                        {formatNumber(result.value, format)}{' '}
+                                        {formattedResultString}{' '}
                                         <span className="text-lg font-medium text-purple-600 dark:text-purple-400 ml-1">{result.unit}</span>
                                     </>
                                )}
@@ -179,3 +191,5 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
 });
 
 ConversionDisplay.displayName = 'ConversionDisplay';
+
+    

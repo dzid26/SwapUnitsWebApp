@@ -347,6 +347,11 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
     // The useEffect for input/unit changes will trigger the calculation automatically
   }, [fromUnitValue, toUnitValue, setValue]);
 
+  // Callback function to update the numberFormat state from ConversionDisplay
+  const handleActualFormatChange = React.useCallback((actualFormat: NumberFormat) => {
+      setNumberFormat(actualFormat);
+  }, []);
+
   return (
     // Use semantic main or section tag if appropriate, but div is okay here
     <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -548,14 +553,14 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                 fromUnit={fromUnitValue ?? ''}
                 result={conversionResult}
                 format={numberFormat} // Pass the selected format
+                onActualFormatChange={handleActualFormatChange} // Pass callback
                />
 
                {/* Number Formatting Options */}
                 <fieldset className="pt-4"> {/* Use fieldset for grouping related radio buttons */}
                   <legend className="mb-2 block font-medium">Result Formatting Options</legend>
                    <RadioGroup
-                     defaultValue="normal"
-                     value={numberFormat}
+                     value={numberFormat} // Controlled by state
                      onValueChange={(value: string) => setNumberFormat(value as NumberFormat)}
                      className="flex flex-col sm:flex-row gap-4"
                      aria-label="Choose number format for the result"
@@ -590,3 +595,5 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
 });
 
 UnitConverter.displayName = 'UnitConverter';
+
+    
