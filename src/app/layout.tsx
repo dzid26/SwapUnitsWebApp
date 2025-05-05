@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Using Inter font
 import "./globals.css";
-// Removed: import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils"; // Import cn utility
 
 // Use Inter font - known for readability
 const inter = Inter({
@@ -9,11 +9,76 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+// Replace with your actual deployed URL
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'; // Fallback for local dev
 
 export const metadata: Metadata = {
-  title: "Unitopia | Free Online Unit Converter Tool",
-  description: "Instantly convert length, mass, temperature, time, pressure, area, volume, and energy units with Unitopia. Fast, free, and easy-to-use online converter.",
-  keywords: "unit converter, measurement converter, convert units, online converter, free converter, length, mass, temperature, time, pressure, area, volume, energy, metric, imperial, calculator",
+  // Define metadataBase for resolving relative paths, especially for images
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Unitopia | Free Online Unit Converter Tool",
+    template: "%s | Unitopia", // Allows pages to set their own title part
+  },
+  description: "Instantly convert length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, and data transfer units with Unitopia. Fast, free, and easy-to-use online converter.",
+  keywords: "unit converter, measurement converter, convert units, online converter, free converter, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, metric, imperial, calculator",
+  // Open Graph metadata for social sharing previews
+  openGraph: {
+    title: "Unitopia | Free Online Unit Converter Tool",
+    description: "Instantly convert length, mass, temperature, time, and more units with Unitopia.",
+    url: siteUrl,
+    siteName: 'Unitopia',
+    // Replace with a URL to your actual logo or relevant image (e.g., 1200x630)
+    images: [
+      {
+        // !! IMPORTANT: Replace with a real image URL for your site !!
+        // You can generate one or upload to a hosting service.
+        // Example using a placeholder service (replace before deployment):
+        url: '/og-image.png', // Example: Assumes an image file in your public folder
+        width: 1200,
+        height: 630,
+        alt: 'Unitopia Unit Converter Tool',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  // Twitter card metadata
+  twitter: {
+    card: 'summary_large_image',
+    title: "Unitopia | Free Online Unit Converter Tool",
+    description: "Instantly convert length, mass, temperature, time, and more units with Unitopia.",
+     // Replace with a URL to your actual logo or relevant image (e.g., 1200x630)
+     // Must be an absolute URL
+    images: [`${siteUrl}/og-image.png`], // Example using the same placeholder
+    // Optional: Add your Twitter handle like '@YourTwitterHandle'
+    // creator: '@YourTwitterHandle',
+  },
+  // Robots directives (optional, good practice)
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  // Viewport settings (usually handled by Next.js, but good to be explicit)
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1, // Prevent zooming, optional
+  },
+  // Icons (favicon etc.) - Place your icon files in the /public directory
+  // Next.js automatically handles standard names like favicon.ico, apple-touch-icon.png etc.
+  // Example if you have specific icons:
+  // icons: {
+  //   icon: '/favicon.ico',
+  //   shortcut: '/favicon-16x16.png',
+  //   apple: '/apple-touch-icon.png',
+  // },
 };
 
 export default function RootLayout({
@@ -22,12 +87,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth"> {/* Add scroll-smooth */}
       <body
-        className={`${inter.variable} antialiased font-sans`} // Apply Inter font
+        className={cn(
+          `${inter.variable} antialiased font-sans`, // Apply Inter font
+          "min-h-screen bg-background flex flex-col" // Ensure body takes full height and uses flex column
+          )}
       >
+        {/* Children will typically include Header, Main Content, Footer */}
         {children}
-        {/* Removed: <Toaster /> */}
+        {/* Removed: <Toaster /> - It's rendered within page.tsx */}
       </body>
     </html>
   );

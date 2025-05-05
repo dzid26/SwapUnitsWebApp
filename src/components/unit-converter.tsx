@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -279,7 +278,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
        // setLastValidInputValue(lastValidInputValue); // No change needed here
        setIsNormalFormatDisabled(false); // Ensure normal is enabled when input is invalid
     }
-  }, [inputValue, fromUnitValue, toUnitValue, currentCategory, convertUnits, getValues]); // Add currentCategory
+  }, [inputValue, fromUnitValue, toUnitValue, currentCategory, convertUnits, getValues, lastValidInputValue]); // Added lastValidInputValue dependency
 
 
    // Effect to perform initial calculation on mount *only*
@@ -389,15 +388,15 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
       {/* Adjust col-span: col-span-full on mobile, md:col-span-2 on medium screens and up */}
       <Card className="col-span-full md:col-span-2 shadow-lg" aria-labelledby="unit-converter-title">
         <CardHeader>
-          {/* Use H1 for the main title of the component/page section */}
-          <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2">
+          {/* Use H2 for the main component title (H1 is in the global header) */}
+          <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2" as="h2">
             {/* Replace inline SVG with FlaskConical icon */}
             <FlaskConical
               className="h-6 w-6"
               aria-hidden="true" // Hide decorative icon from screen readers
             />
             {/* Conditionally render title based on mobile view */}
-            {isMobile ? 'Unitopia - Unit Converter' : 'Unitopia - Versatile Unit Converter'}
+            {isMobile ? 'Unit Converter' : 'Versatile Unit Converter'} {/* Shortened mobile title */}
           </CardTitle>
            {/* Use paragraph for description */}
            <p className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
@@ -589,7 +588,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
 
                {/* Number Formatting Options */}
                 <fieldset className="pt-4"> {/* Use fieldset for grouping related radio buttons */}
-                  <legend className="mb-2 block font-medium">Result Formatting Options</legend>
+                  <legend className="mb-2 block font-medium text-sm">Result Formatting Options</legend> {/* Use text-sm */}
                    <RadioGroup
                      value={numberFormat} // Controlled by state (user's preference)
                      onValueChange={(value: string) => {
@@ -609,7 +608,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                        <Label
                          htmlFor="format-normal"
                          className={cn(
-                           "cursor-pointer",
+                           "cursor-pointer text-sm", // Ensure label uses text-sm
                             isNormalFormatDisabled && "text-muted-foreground opacity-70 cursor-not-allowed" // Grey out label when disabled
                          )}
                        >
@@ -618,7 +617,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                      </div>
                      <div className="flex items-center space-x-2">
                        <RadioGroupItem value="scientific" id="format-scientific" />
-                       <Label htmlFor="format-scientific" className="cursor-pointer">Scientific (e.g., 1.23E+6)</Label>
+                       <Label htmlFor="format-scientific" className="cursor-pointer text-sm">Scientific (e.g., 1.23E+6)</Label> {/* Ensure label uses text-sm */}
                      </div>
                    </RadioGroup>
                 </fieldset>
@@ -630,14 +629,16 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
 
       {/* Preset List - use aside or section if appropriate */}
       {/* Adjust col-span: hidden on mobile, md:col-span-1 on medium+ */}
-      <aside className="hidden md:block md:col-span-1"> {/* Use aside for complementary content */}
+      <aside className="hidden md:block md:col-span-1" role="complementary"> {/* Use aside for complementary content */}
         <PresetList onPresetSelect={handlePresetSelect} />
       </aside>
 
        {/* Potential future ad slot area - Consider semantic placement */}
-       {/* <div className="md:col-span-3 mt-8 h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
+       {/*
+       <div className="md:col-span-3 mt-8 h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md" aria-label="Advertisement">
           (Future Ad Area 2)
-       </div> */}
+       </div>
+       */}
     </div>
   );
 });

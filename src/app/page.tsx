@@ -1,5 +1,4 @@
 
-
 import { UnitConverter } from "@/components/unit-converter";
 import type { Metadata } from 'next';
 import Script from 'next/script';
@@ -9,45 +8,59 @@ import { RefreshCw } from 'lucide-react'; // Import swap/refresh icon
 import Link from 'next/link'; // Import Link
 import { Footer } from "@/components/footer"; // Import the Footer component
 
-// Page-specific metadata
+// Page-specific metadata (can override layout defaults or add specifics)
 export const metadata: Metadata = {
-  title: "Unitopia - Accurate & Fast Unit Conversion Online", // Slightly different title for variety
-  description: "Convert various engineering and everyday units like meters to feet, kg to lbs, Celsius to Fahrenheit, and more. Unitopia offers a simple interface for quick conversions.",
+  title: "Unitopia - Fast & Accurate Online Unit Converter", // Optimized title
+  description: "Free online tool to instantly convert common and specialized units: length (m, ft), mass (kg, lb), temp (°C, °F), time, pressure, area, volume, energy, speed, fuel economy, data storage & transfer. Simple & precise.", // Optimized description
   alternates: {
-    canonical: '/', // Assuming this is the canonical URL
+    canonical: '/', // Set the canonical URL for the homepage
   },
+  keywords: "unit converter, online unit converter, free unit converter, measurement converter, metric conversion, imperial conversion, length converter, mass converter, temperature converter, time converter, pressure converter, area converter, volume converter, energy converter, speed converter, fuel economy converter, data storage converter, data transfer converter, m to ft, kg to lbs, C to F", // Expanded keywords
 };
 
 // JSON-LD Structured Data for WebApplication
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Unitopia - Unit Converter',
-  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, and energy.',
+  name: 'Unitopia - Free Online Unit Converter',
+  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, and data transfer rate.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any', // Web-based
-  url: 'https://YOUR_APP_URL_HERE', // Replace with the actual deployed URL
+  // !! IMPORTANT: Replace this placeholder with your actual deployed application URL !!
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com', // Use environment variable or placeholder
   featureList: [
     'Unit Conversion',
-    'Length Conversion',
-    'Mass Conversion',
-    'Temperature Conversion',
-    'Time Conversion',
-    'Pressure Conversion',
-    'Area Conversion',
-    'Volume Conversion',
-    'Energy Conversion',
+    'Length Conversion (m, ft, km, mi, in, cm)',
+    'Mass Conversion (kg, lb, g, oz, t)',
+    'Temperature Conversion (°C, °F, K)',
+    'Time Conversion (s, min, hr, day, ms)',
+    'Pressure Conversion (Pa, kPa, bar, atm, psi)',
+    'Area Conversion (m², ft², km², mi², ha, acre)',
+    'Volume Conversion (L, mL, m³, ft³, gal, qt, pt)',
+    'Energy Conversion (J, kJ, cal, kcal, kWh, BTU)',
+    'Speed Conversion (m/s, km/h, mph, kn)',
+    'Fuel Economy Conversion (km/L, L/100km, MPG US, MPG UK)',
+    'Data Storage Conversion (B, KB, MB, GB, TB)',
+    'Data Transfer Rate Conversion (bps, Kbps, Mbps, Gbps, B/s, MB/s)',
     'Metric Units',
     'Imperial Units',
     'Scientific Notation Option',
-    'Common Presets',
+    'Common Conversion Presets',
+    'Copy to Clipboard',
+    'Responsive Design',
   ],
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
   },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy",
+  // Optional: Add provider/author information if relevant
+  // provider: {
+  //   '@type': 'Organization',
+  //   name: 'Your Company Name',
+  //   url: 'https://yourcompany.com'
+  // },
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, metric, imperial, scientific notation, presets", // Synced with meta keywords
 };
 
 
@@ -73,7 +86,8 @@ export default function Home() {
               className="h-5 w-5 text-primary transition-transform duration-300 ease-in-out group-hover:rotate-180"
               aria-hidden="true"
             />
-            <span className="font-bold text-lg text-foreground">UNITOPIA</span>
+            {/* Use H1 for the site name/logo in the header for global context */}
+            <h1 className="font-bold text-lg text-foreground">UNITOPIA</h1>
           </Link>
           {/* Bookmark Button on the right */}
           <BookmarkButton />
@@ -82,29 +96,34 @@ export default function Home() {
 
       {/* Use grid layout for ad placeholder and main content */}
       {/* Halved the top padding: p-4 -> pt-2, sm:p-8 -> sm:pt-4, etc. */}
-      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20 items-start min-h-screen"> {/* Added min-h-screen to push footer down */}
+      {/* Use flex-grow to make this section fill available space */}
+      <div className="flex-grow grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20 items-start"> {/* Removed min-h-screen */}
         {/* Left Sidebar Ad Placeholder - Optimized for 160x600 Skyscraper Ad */}
         {/* Adjusted sticky top to account for header height (approximate) */}
-        <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[1rem]"> {/* Adjusted sticky top */}
+        <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[calc(var(--header-height,60px)+1rem)]"> {/* Adjusted sticky top calculation */}
           {/* Content for the ad placeholder */}
-          <div>Ad Placeholder (160x600)</div>
+          {/* It's crucial to use real ad code here for SEO and revenue */}
+          <div aria-label="Advertisement">Ad Placeholder (160x600)</div>
         </aside>
 
         {/* Main Content Area - Removed position: relative */}
-        <main className="flex flex-col items-center w-full order-2">
+        {/* Use <main> tag for the primary content of the page */}
+        <main className="flex flex-col items-center w-full order-2" role="main">
            {/* Toaster moved outside main content to be globally positioned */}
            <Toaster />
 
-           {/* Removed introductory paragraph */}
+           {/* UnitConverter component contains the H2 heading now */}
            <UnitConverter />
             {/* Potential future ad slot area - styled minimally for now */}
-            {/* <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md">
+            {/*
+            <div className="mt-12 w-full max-w-4xl h-24 bg-muted/30 flex items-center justify-center text-muted-foreground rounded-md" aria-label="Advertisement">
               (Future Ad Area)
-            </div> */}
+            </div>
+            */}
         </main>
       </div>
 
-      {/* Add Footer */}
+      {/* Footer sticks to the bottom because of flex-grow on the container div and min-h-screen on body */}
       <Footer />
     </>
   );
