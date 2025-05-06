@@ -53,6 +53,8 @@ export const metadata: Metadata = {
     // Optional: Add your Twitter handle like '@YourTwitterHandle'
     // creator: '@YourTwitterHandle',
   },
+  // Add Google AdSense account meta tag
+  other: {'google-adsense-account': 'ca-pub-3730679326380863'},
   // Robots directives (optional, good practice)
   robots: {
     index: true,
