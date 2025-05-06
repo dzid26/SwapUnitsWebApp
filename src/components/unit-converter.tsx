@@ -93,6 +93,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
   const convertUnits = React.useCallback((data: Partial<FormData>): ConversionResult | null => {
     const { category, fromUnit, toUnit, value } = data;
     const numericValue = Number(value); // Attempt to convert input value to number
+    const refPressure = 20e-6; // 20 micropascals for SPL
 
     // Basic validation: ensure essential fields are present and value is a finite number
     if (!category || !fromUnit || !toUnit || value === undefined || value === null || !isFinite(numericValue) || value === '') {
@@ -154,6 +155,29 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
         }
 
         return isFinite(resultValue) ? { value: resultValue, unit: toUnitData.symbol } : null;
+    }
+
+    // --- Pressure to SPL and SPL to Pressure ---
+    if (category === "Pressure") {
+        if (fromUnitData.symbol === 'dB SPL' && toUnitData.symbol !== 'dB SPL') {
+            // Convert dB SPL to Pascals
+            const pressureInPascals = refPressure * (10 ** (numericValue / 20));
+            // Now convert Pascals to the target pressure unit
+            const resultValue = pressureInPascals / toUnitData.factor;
+            return isFinite(resultValue) ? { value: resultValue, unit: toUnitData.symbol } : null;
+        }
+        if (toUnitData.symbol === 'dB SPL' && fromUnitData.symbol !== 'dB SPL') {
+            // Convert input pressure unit to Pascals first
+            const pressureInPascals = numericValue * fromUnitData.factor;
+            if (pressureInPascals <= 0) return null; // SPL is undefined for non-positive pressures
+            // Convert Pascals to dB SPL
+            const resultValue = 20 * Math.log10(pressureInPascals / refPressure);
+            return isFinite(resultValue) ? { value: resultValue, unit: toUnitData.symbol } : null;
+        }
+        // If both are dB SPL or neither is, do standard conversion
+        if (fromUnitData.symbol === 'dB SPL' && toUnitData.symbol === 'dB SPL') {
+            return { value: numericValue, unit: 'dB SPL' }; // No conversion needed
+        }
     }
 
 
@@ -400,7 +424,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
               aria-hidden="true" // Hide decorative icon from screen readers
             />
             {/* Conditionally render title based on mobile view */}
-            {isMobile ? 'Unit Converter' : 'Versatile Unit Converter'} {/* Shortened mobile title */}
+            {isMobile ? 'Swap Units Converter' : 'Swap Units Converter'}
           </CardTitle>
            {/* Use paragraph for description */}
            <p className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
@@ -573,6 +597,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                          value={(field.value === '' || field.value === '-') ? field.value : (isNaN(Number(field.value)) ? '' : String(field.value))}
                         disabled={!fromUnitValue || !toUnitValue}
                         aria-required="true" // Indicate required field
+                        className="border-primary" // Keep blue border always visible
                       />
                     </FormControl>
                     <FormDescription>Enter the numerical value you wish to convert.</FormDescription>
