@@ -1,5 +1,5 @@
 
-import type { UnitCategory, UnitData, Preset } from '@/types';
+import type { UnitCategory, UnitData, Preset, Unit } from '@/types';
 
 // Base units:
 // Length: Meter (m)
@@ -184,7 +184,10 @@ export const unitData: Record<UnitCategory, UnitData> = {
 };
 
 // Expanded preset list to ensure coverage for all categories
-export const presets: Preset[] = [
+export const allPresets: Preset[] = [
+  // Bitcoin (will be moved up by sorting logic)
+  { category: 'Bitcoin', fromUnit: 'BTC', toUnit: 'sat', name: 'Bitcoin to Satoshi' },
+  { category: 'Bitcoin', fromUnit: 'sat', toUnit: 'BTC', name: 'Satoshi to Bitcoin' },
   // Length
   { category: 'Length', fromUnit: 'm', toUnit: 'ft', name: 'Meter to Feet' },
   { category: 'Length', fromUnit: 'km', toUnit: 'mi', name: 'Kilometer to Miles' },
@@ -221,10 +224,82 @@ export const presets: Preset[] = [
   // Data Transfer Rate
   { category: 'Data Transfer Rate', fromUnit: 'Mbps', toUnit: 'MB/s', name: 'Mbps to MB/s' },
   { category: 'Data Transfer Rate', fromUnit: 'Gbps', toUnit: 'Mbps', name: 'Gbps to Mbps' },
-  // Bitcoin
-  { category: 'Bitcoin', fromUnit: 'BTC', toUnit: 'sat', name: 'Bitcoin to Satoshi' },
-  { category: 'Bitcoin', fromUnit: 'sat', toUnit: 'BTC', name: 'Satoshi to Bitcoin' },
 ];
 
-// Ensure this `presets` list contains at least one item for each category defined in `unitData`.
+// Define the desired order of categories, putting Bitcoin first
+const categoryOrder: UnitCategory[] = [
+  'Bitcoin',
+  'Length',
+  'Mass',
+  'Temperature',
+  'Time',
+  'Pressure',
+  'Area',
+  'Volume',
+  'Energy',
+  'Speed',
+  'Fuel Economy',
+  'Data Storage',
+  'Data Transfer Rate',
+];
+
+
+// Function to filter and sort presets: Ensure at least one per category, max 2 per category, max 15 total.
+// Sorts according to categoryOrder with Bitcoin first.
+export const getFilteredAndSortedPresets = (): Preset[] => {
+    // Sort the initial presets based on the desired category order
+    const sortedPresets = [...allPresets].sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a.category);
+        const indexB = categoryOrder.indexOf(b.category);
+        // Handle cases where a category might not be in categoryOrder (shouldn't happen ideally)
+        if (indexA === -1 && indexB === -1) return 0; // Keep original relative order if both unknown
+        if (indexA === -1) return 1; // Put unknown categories later
+        if (indexB === -1) return -1; // Put unknown categories later
+        return indexA - indexB; // Sort based on the defined order
+    });
+
+    const finalPresets: Preset[] = [];
+    const categoryCounts: Record<string, number> = {}; // Tracks count per category added to finalPresets
+
+    // --- Pass 1: Ensure at least one preset per category (using the sorted list) ---
+    // Iterate through the defined category order first to ensure representation
+    categoryOrder.forEach(category => {
+        // Find the first preset in the sorted list for this category
+        const presetForCategory = sortedPresets.find(p => p.category === category);
+        if (presetForCategory && finalPresets.length < 15) {
+            // Check if this specific preset instance is already added
+             const isAlreadyAdded = finalPresets.some(fp =>
+                fp.name === presetForCategory.name && fp.category === presetForCategory.category
+             );
+             if (!isAlreadyAdded) {
+                finalPresets.push(presetForCategory);
+                categoryCounts[category] = 1; // Mark one added
+             }
+        }
+    });
+
+
+    // --- Pass 2: Add a second preset per category if available and limit not reached (using the sorted list) ---
+    sortedPresets.forEach(preset => {
+        if (finalPresets.length >= 15) return; // Stop if limit reached
+
+        const currentCount = categoryCounts[preset.category] || 0;
+
+        // Check if this preset is already added in finalPresets
+        const isAlreadyAdded = finalPresets.some(fp =>
+           fp.name === preset.name && fp.category === preset.category
+        );
+
+        // If not already added and we have less than 2 for this category
+        if (!isAlreadyAdded && currentCount < 2) {
+            finalPresets.push(preset);
+            categoryCounts[preset.category] = currentCount + 1; // Increment count
+        }
+    });
+
+    // Final slice to ensure the 15 limit is strictly enforced
+    return finalPresets.slice(0, 15);
+};
+
+// Ensure this `allPresets` list contains at least one item for each category defined in `unitData`.
 // The filtering logic in `preset-list.tsx` will handle the display limits.
