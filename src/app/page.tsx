@@ -90,6 +90,20 @@ export default function Home() {
     }
   };
 
+  const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault(); // Prevent default navigation
+
+    if (unitConverterRef.current) {
+      const initialPreset: Preset = {
+        category: 'Mass',
+        fromUnit: 'kg',
+        toUnit: 'g',
+        name: 'InitialReset', // Internal name, not displayed
+      };
+      unitConverterRef.current.handlePresetSelect(initialPreset);
+    }
+  };
+
 
   return (
     <>
@@ -143,7 +157,12 @@ export default function Home() {
 
         {/* Centered Logo and Text - Absolute positioned */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Link href="/" className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            onClick={handleLogoClick}
+            className="group flex items-center gap-2 hover:opacity-80 transition-opacity"
+            aria-label="Refresh unit converter and return to initial state"
+          >
             <RefreshCw
               className="h-5 w-5 text-primary transition-transform duration-300 ease-in-out group-hover:rotate-180"
               aria-hidden="true"
@@ -159,17 +178,17 @@ export default function Home() {
       </header>
 
       <div className={cn(
-        "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch", // Changed items-start to items-stretch
+        "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch",
         "pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20",
         "md:grid-cols-3 md:gap-8"
       )}>
         <main className="flex flex-col items-center w-full md:col-span-2" role="main">
           <Toaster />
-          <UnitConverter ref={unitConverterRef} className="h-full"/> {/* Added h-full */}
+          <UnitConverter ref={unitConverterRef} className="h-full"/>
         </main>
 
         <aside className="hidden md:block md:col-span-1" role="complementary">
-          <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/> {/* Added h-full */}
+          <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
         </aside>
       </div>
       <Footer />
