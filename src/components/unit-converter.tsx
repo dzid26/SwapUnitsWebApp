@@ -469,7 +469,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
                            )}
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent side="bottom" avoidCollisions={false}>
                         {Object.keys(unitData).map((cat) => (
                           <SelectItem key={cat} value={cat}>
                              <div className="flex items-center gap-2">
