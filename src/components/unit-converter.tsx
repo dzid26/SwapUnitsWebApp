@@ -428,7 +428,7 @@ export const UnitConverter = React.memo(function UnitConverterComponent() {
           </CardTitle>
            {/* Use paragraph for description */}
            <p className="text-sm text-muted-foreground mt-4 mb-2 space-y-1">
-             Quickly convert between common and specialized units. Follow these simple steps:
+             Quickly convert between common and specialized units.
            </p>
            {/* Ordered list for steps */}
            <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
