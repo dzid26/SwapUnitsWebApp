@@ -41,12 +41,12 @@ export function Footer() {
   return (
     <footer className="w-full border-t bg-muted/40 mt-auto">
       {/* Adjusted layout for better responsiveness and to prevent overlap */}
-      <div className="container mx-auto py-6 px-4 md:px-6 text-sm text-muted-foreground flex flex-col items-center sm:flex-row sm:justify-between gap-2 sm:gap-4">
+      <div className="container mx-auto py-6 px-4 md:px-6 text-sm text-muted-foreground flex flex-col items-center gap-2">
         {/* Copyright Text */}
-        <p className="text-center sm:text-left">&copy; {currentYear} SwapUnits.com. All rights reserved.</p>
+        <p className="text-center">&copy; {currentYear} SwapUnits.com. All rights reserved.</p>
 
         {/* Visit Counter */}
-        <div className="text-center sm:text-right">
+        <div className="text-center">
           {visitCount !== null ? (
             <p>Happy user conversions: {visitCount.toLocaleString()}</p>
           ) : (
