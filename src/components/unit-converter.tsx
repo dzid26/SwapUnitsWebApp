@@ -346,6 +346,10 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         }
     }, [numberFormat]); // Depend on numberFormat to correctly decide if a switch is needed
 
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Prevent default form submission
+  };
+
 
   return (
      <Card className={cn("shadow-lg h-full flex flex-col", className)} aria-labelledby="unit-converter-title">
@@ -369,7 +373,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         </CardHeader>
         <CardContent className="pt-0 flex-grow"> {/* Adjusted padding if needed, flex-grow for height matching */}
           <Form {...form}>
-            <form className="space-y-6 h-full flex flex-col" aria-live="polite"> {/* space-y-6 gives consistent spacing, h-full and flex-col for height */}
+            <form onSubmit={handleFormSubmit} className="space-y-6 h-full flex flex-col" aria-live="polite"> {/* space-y-6 gives consistent spacing, h-full and flex-col for height */}
               <FormField
                 control={form.control}
                 name="category"
