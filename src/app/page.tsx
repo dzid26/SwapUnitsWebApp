@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/', // Set the canonical URL for the homepage
   },
-  keywords: "unit converter, online unit converter, free unit converter, measurement converter, metric conversion, imperial conversion, length converter, mass converter, temperature converter, time converter, pressure converter, area converter, volume converter, energy converter, speed converter, fuel economy converter, data storage converter, data transfer converter, m to ft, kg to lbs, C to F", // Expanded keywords
+  keywords: "unit converter, online unit converter, free unit converter, measurement converter, metric conversion, imperial conversion, length converter, mass converter, temperature converter, time converter, pressure converter, area converter, volume converter, energy converter, speed converter, fuel economy converter, data storage converter, data transfer converter, m to ft, kg to lbs, C to F, bitcoin, satoshi, SPL to Pa", // Expanded keywords
 };
 
 // JSON-LD Structured Data for WebApplication
@@ -23,7 +23,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'SwapUnits - Free Online Unit Converter',
-  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, and data transfer rate.',
+  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, and Bitcoin. Convert pressure to Sound Pressure Level (SPL) and vice versa.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any', // Web-based
   // !! IMPORTANT: Replace this placeholder with your actual deployed application URL !!
@@ -35,6 +35,7 @@ const jsonLd = {
     'Temperature Conversion (°C, °F, K)',
     'Time Conversion (s, min, hr, day, ms)',
     'Pressure Conversion (Pa, kPa, bar, atm, psi, dB SPL)',
+    'Sound Pressure Level Conversion (dB SPL to Pa, Pa to dB SPL)',
     'Area Conversion (m², ft², km², mi², ha, acre)',
     'Volume Conversion (L, mL, m³, ft³, gal, qt, pt)',
     'Energy Conversion (J, kJ, cal, kcal, kWh, BTU)',
@@ -61,7 +62,7 @@ const jsonLd = {
   //   name: 'Your Company Name',
   //   url: 'https://yourcompany.com'
   // },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, metric, imperial, scientific notation, presets", // Synced with meta keywords
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, SPL, Sound Pressure Level, metric, imperial, scientific notation, presets", // Synced with meta keywords
 };
 
 
@@ -95,21 +96,16 @@ export default function Home() {
       </header>
 
 
-      {/* Use grid layout for ad placeholder and main content */}
+      {/* Use grid layout for main content, ad placeholder removed */}
       {/* Halved the top padding: p-4 -> pt-2, sm:p-8 -> sm:pt-4, etc. */}
       {/* Use flex-grow to make this section fill available space */}
-      <div className="flex-grow grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-8 w-full max-w-7xl mx-auto pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20 items-start"> {/* Removed min-h-screen */}
-        {/* Left Sidebar Ad Placeholder - Optimized for 160x600 Skyscraper Ad */}
-        {/* Adjusted sticky top to account for header height (approximate) */}
-        <aside className="w-full lg:w-[200px] h-auto lg:min-h-[600px] bg-muted/30 border rounded-md p-4 text-center text-muted-foreground flex items-center justify-center order-1 lg:sticky lg:top-[calc(var(--header-height,60px)+1rem)]"> {/* Adjusted sticky top calculation */}
-          {/* Content for the ad placeholder */}
-          {/* It's crucial to use real ad code here for SEO and revenue */}
-          <div aria-label="Advertisement">Ad Placeholder (160x600)</div>
-        </aside>
-
-        {/* Main Content Area - Removed position: relative */}
+      {/* Removed lg:grid-cols-[200px_1fr] and gap-8 as ad placeholder is gone */}
+      <div className="flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20 items-start"> {/* Removed min-h-screen */}
+        
+        {/* Main Content Area */}
         {/* Use <main> tag for the primary content of the page */}
-        <main className="flex flex-col items-center w-full order-2" role="main">
+        {/* Removed order-2 as it's the only child in the grid now */}
+        <main className="flex flex-col items-center w-full" role="main">
            {/* Toaster moved outside main content to be globally positioned */}
            <Toaster />
 
@@ -129,3 +125,4 @@ export default function Home() {
     </>
   );
 }
+
