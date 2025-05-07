@@ -348,17 +348,17 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 
   return (
-     <Card className={cn("shadow-lg h-full", className)} aria-labelledby="unit-converter-title">
+     <Card className={cn("shadow-lg h-full flex flex-col", className)} aria-labelledby="unit-converter-title">
         <CardHeader>
           <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2" as="h2">
             <FlaskConical
               className="h-6 w-6"
               aria-hidden="true"
             />
-             {isMobile ? 'Swap Units' : 'Swap Units Converter'}
+             Swap Units Converter
           </CardTitle>
           <br />
-           <p className="text-sm text-muted-foreground mt-1 mb-2 space-y-1"> {/* Adjusted mt-1 from mt-4 */}
+           <p className="text-sm text-muted-foreground mt-1 mb-2 space-y-1">
              Quickly convert between common and specialized units.
            </p>
            <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
@@ -367,9 +367,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
              <li><span className="font-semibold text-primary">View Result:</span> The converted value appears automatically below.</li>
            </ol>
         </CardHeader>
-        <CardContent className="pt-0"> {/* Adjusted padding if needed */}
+        <CardContent className="pt-0 flex-grow"> {/* Adjusted padding if needed, flex-grow for height matching */}
           <Form {...form}>
-            <form className="space-y-6" aria-live="polite"> {/* space-y-6 gives consistent spacing */}
+            <form className="space-y-6 h-full flex flex-col" aria-live="polite"> {/* space-y-6 gives consistent spacing, h-full and flex-col for height */}
               <FormField
                 control={form.control}
                 name="category"
@@ -520,7 +520,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                   </FormItem>
                 )}
               />
-
+              <div className="flex-grow" /> {/* Spacer to push content below to bottom of card */}
                {/* Conversion Result Display */}
                <ConversionDisplay
                 fromValue={lastValidInputValue} // Use the debounced or last valid input
@@ -574,3 +574,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
