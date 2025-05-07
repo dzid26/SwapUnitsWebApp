@@ -2,21 +2,22 @@ import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getFilteredAndSortedPresets } from "@/lib/unit-data"; // Keep import to get presets data
-import { type Preset } from '@/types';
+import type { Preset } from '@/types';
 import { List } from 'lucide-react';
 import { UnitIcon } from './unit-icon';
 import { cn } from "@/lib/utils";
 
 interface PresetListProps {
     onPresetSelect: (preset: Preset) => void;
+    className?: string; // Add className prop
 }
 
-export const PresetList = React.memo(function PresetListComponent({ onPresetSelect }: PresetListProps) {
+export const PresetList = React.memo(function PresetListComponent({ onPresetSelect, className }: PresetListProps) {
     // Get presets directly, sorting/filtering logic is in the utility function
     const displayPresets = getFilteredAndSortedPresets();
 
     return (
-        <Card className={cn("shadow-lg hidden md:block")} aria-label="Common Unit Conversion Presets">
+        <Card className={cn("shadow-lg hidden md:block", className)} aria-label="Common Unit Conversion Presets">
             <CardHeader>
                 <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
                     <List className="h-5 w-5" aria-hidden="true" />

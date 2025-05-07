@@ -1,3 +1,4 @@
+
 'use client'; // This page is now a Client Component
 
 import * as React from 'react';
@@ -36,7 +37,7 @@ const jsonLd = {
   description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, and Bitcoin. Convert pressure to Sound Pressure Level (SPL) and vice versa.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any', // Web-based
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://swapunits.com', // Updated URL
   featureList: [
     'Unit Conversion',
     'Length Conversion (m, ft, km, mi, in, cm)',
@@ -158,21 +159,19 @@ export default function Home() {
       </header>
 
       <div className={cn(
-        "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-start",
+        "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch", // Changed items-start to items-stretch
         "pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20",
         "md:grid-cols-3 md:gap-8"
       )}>
         <main className="flex flex-col items-center w-full md:col-span-2" role="main">
           <Toaster />
-          <UnitConverter ref={unitConverterRef} />
+          <UnitConverter ref={unitConverterRef} className="h-full"/> {/* Added h-full */}
         </main>
 
         <aside className="hidden md:block md:col-span-1" role="complementary">
-          <PresetList onPresetSelect={handlePresetSelectFromDesktop} />
+          <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/> {/* Added h-full */}
         </aside>
-
       </div>
-
       <Footer />
     </>
   );
