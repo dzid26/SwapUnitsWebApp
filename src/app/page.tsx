@@ -13,7 +13,7 @@ import { Footer } from "@/components/footer";
 import { PresetList } from "@/components/preset-list"; 
 import { UnitIcon } from '@/components/unit-icon'; 
 import { getFilteredAndSortedPresets } from '@/lib/unit-data'; 
-import type { Preset, ConverterMode } from '@/types'; 
+import type { Preset, ConverterMode, UnitCategory } from '@/types'; 
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -35,26 +35,28 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'SwapUnits - Free Online Unit Converter',
-  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, Bitcoin, and Ethereum.',
+  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, Bitcoin, Ethereum, EM Frequency, and Sound Frequency.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any', // Web-based
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://swapunits.com',
   featureList: [
     'Unit Conversion',
-    'Length Conversion (m, ft, km, mi, in, cm)',
-    'Mass Conversion (kg, lb, g, oz, t)',
+    'Length Conversion (m, ft, km, mi, in, cm, µm, nm)',
+    'Mass Conversion (kg, lb, g, oz, t, mg)',
     'Temperature Conversion (°C, °F, K)',
     'Time Conversion (s, min, hr, day, ms, µs, ns, ps, fs)', 
     'Pressure Conversion (Pa, kPa, bar, atm, psi)',
-    'Area Conversion (m², ft², km², mi², ha, acre)',
-    'Volume Conversion (L, mL, m³, ft³, gal, qt, pt)',
-    'Energy Conversion (J, kJ, cal, kcal, kWh, BTU)',
-    'Speed Conversion (m/s, km/h, mph, kn)',
+    'Area Conversion (m², ft², km², mi², ha, acre, cm², mm²)',
+    'Volume Conversion (L, mL, m³, ft³, gal, qt, pt, cup, fl oz, tbsp, tsp, km³, cm³, mm³, in³)',
+    'Energy Conversion (J, kJ, cal, kcal, kWh, BTU, Wh, eV, ft⋅lb)',
+    'Speed Conversion (m/s, km/h, mph, kn, ft/s)',
     'Fuel Economy Conversion (km/L, L/100km, MPG US, MPG UK)',
-    'Data Storage Conversion (B, KB, MB, GB, TB)',
-    'Data Transfer Rate Conversion (bps, Kbps, Mbps, Gbps, B/s, MB/s)',
+    'Data Storage Conversion (B, KB, MB, GB, TB, PB, bit)',
+    'Data Transfer Rate Conversion (bps, Kbps, Mbps, Gbps, Tbps, B/s, KB/s, MB/s, GB/s, TB/s)',
     'Bitcoin Conversion (BTC, sat)',
     'Ethereum Conversion (ETH, gwei, wei)',
+    'EM Frequency & Wavelength Conversion (THz, GHz, MHz, kHz, Hz, mHz, km (λ), m (λ), cm (λ), mm (λ), µm (λ), nm (λ))',
+    'Sound Frequency & Wavelength Conversion (THz Sound, GHz Sound, MHz Sound, kHz Sound, Hz Sound, mHz Sound, km (Sound λ), m (Sound λ), cm (Sound λ), mm (Sound λ), µm (Sound λ), nm (Sound λ))',
     'Metric Units',
     'Imperial Units',
     'Scientific Notation Option',
@@ -68,7 +70,7 @@ const jsonLd = {
     price: '0',
     priceCurrency: 'USD',
   },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond",
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond, EM frequency, sound frequency, wavelength, THz, GHz, nm, SPL, Pa",
 };
 
 
@@ -98,7 +100,7 @@ export default function Home() {
 
     if (unitConverterRef.current) {
       const initialPreset: Preset = {
-        category: 'Mass',
+        category: 'Mass' as UnitCategory, // Ensure category is of type UnitCategory
         fromUnit: 'kg',
         toUnit: 'g',
         name: 'InitialReset', 

@@ -15,8 +15,8 @@ import {
   HardDrive, // For Data Storage
   Network, // For Data Transfer Rate (or Wifi)
   Bitcoin,
-  Sun, // For Light category
-  Signal, // For Frequency category
+  Signal, // For EM Frequency
+  Volume2, // For Sound Frequency
 } from 'lucide-react';
 import type { UnitCategory } from '@/types';
 
@@ -80,10 +80,10 @@ export const UnitIcon = React.memo(function UnitIconComponent({ category, ...pro
         return <Bitcoin {...props} />;
     case 'Ethereum':
         return <EthereumIcon {...props} />;
-    case 'Light':
-        return <Sun {...props} />;
-    case 'Frequency':
+    case 'EM Frequency':
         return <Signal {...props} />;
+    case 'Sound Frequency':
+        return <Volume2 {...props} />;
     default:
       return <HelpCircle {...props} />;
   }

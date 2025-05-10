@@ -5,7 +5,7 @@ export type Unit = {
   symbol: string;
   factor: number; // Factor to convert from this unit to the base unit of the category
   mode?: 'basic' | 'advanced' | 'all'; // To distinguish units by mode
-  unitType?: 'frequency' | 'wavelength'; // To distinguish unit types within a category like Frequency
+  unitType?: 'frequency' | 'wavelength'; // To distinguish unit types within a category
 };
 
 export type UnitCategory =
@@ -23,9 +23,8 @@ export type UnitCategory =
   | 'Data Transfer Rate'
   | 'Bitcoin'
   | 'Ethereum'
-  | 'Light'
-  | 'Frequency';
-
+  | 'EM Frequency' // Changed from Frequency
+  | 'Sound Frequency'; // Added new category
 
 export type UnitData = {
   name: string;
@@ -50,5 +49,4 @@ export type NumberFormat = 'normal' | 'scientific';
 
 // Type for converter mode
 export type ConverterMode = 'basic' | 'advanced';
-
 
