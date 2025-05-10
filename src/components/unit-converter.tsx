@@ -186,6 +186,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 case 'Data Storage': newFromUnitSymbol = 'GB'; newToUnitSymbol = 'MB'; break;
                 case 'Data Transfer Rate': newFromUnitSymbol = 'Mbps'; newToUnitSymbol = 'MB/s'; break;
                 case 'Bitcoin': newFromUnitSymbol = 'BTC'; newToUnitSymbol = 'sat'; break;
+                case 'Ethereum': newFromUnitSymbol = 'ETH'; newToUnitSymbol = 'gwei'; break;
                 default:
                     newFromUnitSymbol = availableUnits[0]?.symbol || "";
                     newToUnitSymbol = availableUnits.find(u => u.symbol !== newFromUnitSymbol)?.symbol || newFromUnitSymbol;
@@ -239,8 +240,6 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
        setConversionResult(result);
     } else if (category && fromUnit && toUnit && (value === '' || value === '-')) {
         setConversionResult(null);
-        // Keep lastValidInputValue as is, or set to undefined if strict reset on empty is desired
-        // setLastValidInputValue(undefined); 
         setIsNormalFormatDisabled(false);
     } else {
        setConversionResult(null);
@@ -259,7 +258,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
             }
             setLastValidInputValue(initialValue);
             setSelectedCategory(initialFormData.category as UnitCategory);
-            setPrevConverterMode(converterMode); // Initialize prevConverterMode
+            setPrevConverterMode(converterMode); 
 
             const initialAvailableUnits = getUnitsForCategoryAndMode(initialFormData.category as UnitCategory, converterMode);
             let initialFrom = initialFormData.fromUnit;
@@ -283,27 +282,26 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
             setIsNormalFormatDisabled(false); 
         }
      }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []); 
 
 
   const internalHandlePresetSelect = React.useCallback((preset: Preset) => {
     const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
     if (!presetCategory) return;
-
-    // Set category first, it will trigger the useEffect for category/mode changes
+    
+    const newMode = getUnitsForCategoryAndMode(presetCategory, 'advanced').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit) &&
+                    !getUnitsForCategoryAndMode(presetCategory, 'basic').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit)
+                    ? 'advanced' 
+                    : converterMode;
+    
+    if (newMode !== converterMode) {
+      setConverterMode(newMode);
+    }
+    
     setValue("category", presetCategory, { shouldValidate: true, shouldDirty: true });
     
-    // The useEffect watching currentCategory and converterMode will handle setting
-    // fromUnit, toUnit, and value based on the new category and current mode.
-    // We ensure the preset's units are considered if available in the current mode.
-    
-    // We might need to slightly adjust the useEffect to prioritize preset units if they are valid for the mode.
-    // For now, let the existing useEffect handle default unit selection for the new category and mode.
-    // Then, if preset units are valid for the mode, apply them.
-
     setTimeout(() => {
-        const availableUnits = getUnitsForCategoryAndMode(presetCategory, converterMode);
+        const availableUnits = getUnitsForCategoryAndMode(presetCategory, newMode);
         const fromUnitValid = availableUnits.some(u => u.symbol === preset.fromUnit);
         const toUnitValid = availableUnits.some(u => u.symbol === preset.toUnit);
 
@@ -328,9 +326,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
            const result = convertUnits(getValues());
            setConversionResult(result);
         }, 0)
-    }, 50); // Increased timeout slightly to ensure category change effect completes
+    }, 50);
 
-  }, [setValue, reset, getValues, convertUnits, converterMode]);
+  }, [setValue, reset, getValues, convertUnits, converterMode, setConverterMode]);
 
 
   useImperativeHandle(ref, () => ({
@@ -387,8 +385,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
               />
             </div>
           </div>
-          <br />
-           <p className="text-sm text-muted-foreground mt-1 mb-2 space-y-1">
+          <br className="hidden sm:block"/>
+           <p className={cn("text-sm text-muted-foreground mt-1 mb-2 space-y-1", isMobile && "hidden")}>
              Quickly convert between units.
            </p>
            <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
@@ -586,7 +584,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                      </RadioGroup>
                   </fieldset>
                 </div> 
-                <div className="flex-grow"></div> {/* This div will push the form content up if card height is larger */}
+                <div className="flex-grow"></div>
             </form>
           </Form>
         </CardContent>

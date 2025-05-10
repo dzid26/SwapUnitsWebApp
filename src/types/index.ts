@@ -20,7 +20,8 @@ export type UnitCategory =
   | 'Fuel Economy'
   | 'Data Storage'
   | 'Data Transfer Rate'
-  | 'Bitcoin';
+  | 'Bitcoin'
+  | 'Ethereum';
 
 
 export type UnitData = {
@@ -46,3 +47,4 @@ export type NumberFormat = 'normal' | 'scientific';
 
 // Type for converter mode
 export type ConverterMode = 'basic' | 'advanced';
+

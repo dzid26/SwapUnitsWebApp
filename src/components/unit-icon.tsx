@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import {
   Thermometer,
@@ -16,6 +17,7 @@ import {
   Network, // For Data Transfer Rate (or Wifi)
   // Bitcoin icon
   Bitcoin,
+  Sigma, // For Ethereum as a generic value/crypto symbol
 } from 'lucide-react';
 import type { UnitCategory } from '@/types';
 
@@ -51,7 +53,9 @@ export const UnitIcon = React.memo(function UnitIconComponent({ category, ...pro
     case 'Data Transfer Rate':
         return <Network {...props} />;
     case 'Bitcoin':
-        return <Bitcoin {...props} />; // Added Bitcoin icon
+        return <Bitcoin {...props} />;
+    case 'Ethereum':
+        return <Sigma {...props} />; // Using Sigma for Ethereum
     default:
       return <HelpCircle {...props} />;
   }
