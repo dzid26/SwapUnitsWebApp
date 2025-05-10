@@ -142,7 +142,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
         name: 'Fuel Economy',
         units: [
             { name: 'Kilometer per Liter', symbol: 'km/L', factor: 1, mode: 'all' },
-            { name: 'Liter per 100 kilometers', symbol: 'L/100km', factor: 100, mode: 'all' }, // Base is km/L, so for L/100km, factor is 100 / (value in L/100km)
+            { name: 'Liter per 100 kilometers', symbol: 'L/100km', factor: 100, mode: 'all' },
             { name: 'Mile per Gallon (US)', symbol: 'MPG (US)', factor: 0.425144, mode: 'all' },
             { name: 'Mile per Gallon (UK)', symbol: 'MPG (UK)', factor: 0.354006, mode: 'all' },
         ],
@@ -183,8 +183,8 @@ export const unitData: Record<UnitCategory, UnitData> = {
     },
     Ethereum: {
         name: 'Ethereum',
-        units: [
-            { name: 'Ether', symbol: 'ETH', factor: 1e18, mode: 'advanced' }, // Base unit is Wei
+        units: [ // Base unit is Wei
+            { name: 'Ether', symbol: 'ETH', factor: 1e18, mode: 'advanced' },
             { name: 'Gwei', symbol: 'gwei', factor: 1e9, mode: 'advanced' },
             { name: 'Wei', symbol: 'wei', factor: 1, mode: 'advanced' },
         ],
@@ -193,38 +193,38 @@ export const unitData: Record<UnitCategory, UnitData> = {
       name: 'EM Frequency & Wavelength',
       units: [
         // Frequency units (base for frequency type: Hz)
-        { name: 'Terahertz (EM)', symbol: 'THz', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Gigahertz (EM)', symbol: 'GHz', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Megahertz (EM)', symbol: 'MHz', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Kilohertz (EM)', symbol: 'kHz', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Hertz (EM)', symbol: 'Hz', factor: 1, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Millihertz (EM)', symbol: 'mHz', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Terahertz', symbol: 'THz', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Gigahertz', symbol: 'GHz', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Megahertz', symbol: 'MHz', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Kilohertz', symbol: 'kHz', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Hertz', symbol: 'Hz', factor: 1, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Millihertz', symbol: 'mHz', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
         // Wavelength units (base for wavelength type: m)
-        { name: 'Kilometer (EM λ)', symbol: 'km (λ)', factor: 1e3, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Meter (EM λ)', symbol: 'm (λ)', factor: 1, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Centimeter (EM λ)', symbol: 'cm (λ)', factor: 1e-2, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Millimeter (EM λ)', symbol: 'mm (λ)', factor: 1e-3, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Micrometer (EM λ)', symbol: 'µm (λ)', factor: 1e-6, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Nanometer (EM λ)', symbol: 'nm (λ)', factor: 1e-9, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Kilometer (λ)', symbol: 'km (λ)', factor: 1e3, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Meter (λ)', symbol: 'm (λ)', factor: 1, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Centimeter (λ)', symbol: 'cm (λ)', factor: 1e-2, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Millimeter (λ)', symbol: 'mm (λ)', factor: 1e-3, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Micrometer (λ)', symbol: 'µm (λ)', factor: 1e-6, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Nanometer (λ)', symbol: 'nm (λ)', factor: 1e-9, mode: 'advanced', unitType: 'wavelength' },
       ],
     },
     'Sound Frequency': {
       name: 'Sound Frequency & Wavelength',
       units: [
         // Frequency units (base for frequency type: Hz)
-        { name: 'Terahertz (Sound)', symbol: 'THz Sound', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Gigahertz (Sound)', symbol: 'GHz Sound', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Megahertz (Sound)', symbol: 'MHz Sound', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Kilohertz (Sound)', symbol: 'kHz Sound', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Hertz (Sound)', symbol: 'Hz Sound', factor: 1, mode: 'advanced', unitType: 'frequency' },
-        { name: 'Millihertz (Sound)', symbol: 'mHz Sound', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Terahertz', symbol: 'THz Sound', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Gigahertz', symbol: 'GHz Sound', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Megahertz', symbol: 'MHz Sound', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Kilohertz', symbol: 'kHz Sound', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Hertz', symbol: 'Hz Sound', factor: 1, mode: 'advanced', unitType: 'frequency' },
+        { name: 'Millihertz', symbol: 'mHz Sound', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
         // Wavelength units (base for wavelength type: m)
-        { name: 'Kilometer (Sound λ)', symbol: 'km (Sound λ)', factor: 1e3, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Meter (Sound λ)', symbol: 'm (Sound λ)', factor: 1, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Centimeter (Sound λ)', symbol: 'cm (Sound λ)', factor: 1e-2, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Millimeter (Sound λ)', symbol: 'mm (Sound λ)', factor: 1e-3, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Micrometer (Sound λ)', symbol: 'µm (Sound λ)', factor: 1e-6, mode: 'advanced', unitType: 'wavelength' },
-        { name: 'Nanometer (Sound λ)', symbol: 'nm (Sound λ)', factor: 1e-9, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Kilometer (λ)', symbol: 'km (Sound λ)', factor: 1e3, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Meter (λ)', symbol: 'm (Sound λ)', factor: 1, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Centimeter (λ)', symbol: 'cm (Sound λ)', factor: 1e-2, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Millimeter (λ)', symbol: 'mm (Sound λ)', factor: 1e-3, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Micrometer (λ)', symbol: 'µm (Sound λ)', factor: 1e-6, mode: 'advanced', unitType: 'wavelength' },
+        { name: 'Nanometer (λ)', symbol: 'nm (Sound λ)', factor: 1e-9, mode: 'advanced', unitType: 'wavelength' },
       ],
     },
 };
@@ -307,13 +307,10 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
                 fp.name === presetForCategory.name && fp.category === presetForCategory.category
             );
             if (!isAlreadyAdded) {
-                // Check if units in preset are available in 'all' or 'basic' mode for general visibility,
-                // or if they are 'advanced' only, they can still be shown.
-                // The converter itself will handle mode switching if an advanced preset is clicked.
                 const fromUnitDetails = unitData[presetForCategory.category]?.units.find(u => u.symbol === presetForCategory.fromUnit);
                 const toUnitDetails = unitData[presetForCategory.category]?.units.find(u => u.symbol === presetForCategory.toUnit);
 
-                if (fromUnitDetails && toUnitDetails) { // Ensure units exist
+                if (fromUnitDetails && toUnitDetails) {
                     finalPresets.push(presetForCategory);
                     categoryCounts[catName] = (categoryCounts[catName] || 0) + 1;
                 }
@@ -357,7 +354,7 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
                         const cat = finalPresets[i].category;
                         if (categoryCounts[cat] > 1 && cat !== 'Bitcoin' && cat !== lastRequestedPresetCategory) {
                             const firstIndexOfCat = finalPresets.findIndex(fp => fp.category === cat);
-                            if (i !== firstIndexOfCat) { // Try to replace the second instance of a category
+                            if (i !== firstIndexOfCat) { 
                                 finalPresets[i] = presetToAdd;
                                 if(categoryCounts[cat]) categoryCounts[cat]--;
                                 categoryCounts[lastRequestedPresetCategory] = (categoryCounts[lastRequestedPresetCategory] || 0) + 1;
@@ -367,8 +364,8 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
                         }
                     }
                     if (!replaced && finalPresets.length > 0 &&
-                        finalPresets[finalPresets.length - 1].category !== 'Bitcoin' && // Don't replace Bitcoin if it's last
-                        finalPresets[finalPresets.length - 1].category !== lastRequestedPresetCategory // Don't replace itself
+                        finalPresets[finalPresets.length - 1].category !== 'Bitcoin' && 
+                        finalPresets[finalPresets.length - 1].category !== lastRequestedPresetCategory
                         ) {
                          const removedCat = finalPresets[finalPresets.length - 1].category;
                          finalPresets[finalPresets.length - 1] = presetToAdd;
@@ -381,7 +378,7 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
     }
 
     finalPresets.sort((a,b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
-    const uniquePresetTracker = new Set<string>();
+    let uniquePresetTracker = new Set<string>();
     finalPresets = finalPresets.filter(p => {
         const key = `${p.category}-${p.name}`;
         if (uniquePresetTracker.has(key)) return false;
@@ -394,26 +391,25 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
     const bitcoinCategory: UnitCategory = 'Bitcoin';
 
     let btcPresetInstance = allPresets.find(p => p.name === bitcoinPresetTarget && p.category === bitcoinCategory);
-    finalPresets = finalPresets.filter(p => !(p.name === bitcoinPresetTarget && p.category === bitcoinCategory)); // Remove all instances first
+    finalPresets = finalPresets.filter(p => !(p.name === bitcoinPresetTarget && p.category === bitcoinCategory)); 
 
     if(btcPresetInstance) {
          const fromUnitDetailsBtc = unitData[btcPresetInstance.category]?.units.find(u => u.symbol === btcPresetInstance!.fromUnit);
          const toUnitDetailsBtc = unitData[btcPresetInstance.category]?.units.find(u => u.symbol === btcPresetInstance!.toUnit);
         if (fromUnitDetailsBtc && toUnitDetailsBtc) {
-            if (finalPresets.length >= 4) { // Ensure there's a 5th slot (index 4)
+            if (finalPresets.length >= 4) { 
                 finalPresets.splice(4, 0, btcPresetInstance);
             } else {
-                finalPresets.push(btcPresetInstance); // Add to end if list is too short
+                finalPresets.push(btcPresetInstance); 
             }
         }
     }
-
-    // Re-sort and ensure uniqueness and limit
+    
     finalPresets.sort((a,b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
-    const finalUniqueNames = new Set<string>();
+    uniquePresetTracker = new Set<string>();
     return finalPresets.filter(p => {
-        const duplicate = finalUniqueNames.has(p.name + p.category);
-        finalUniqueNames.add(p.name+p.category);
+        const duplicate = uniquePresetTracker.has(p.name + p.category);
+        uniquePresetTracker.add(p.name+p.category);
         return !duplicate;
     }).slice(0,15);
 };
