@@ -417,7 +417,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 
   return (
-     <Card className={cn("shadow-lg flex flex-col h-full", className)} aria-labelledby="unit-converter-title">
+     <Card className={cn("shadow-lg h-full flex flex-col", className)} aria-labelledby="unit-converter-title">
         <CardHeader className="relative">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <CardTitle id="unit-converter-title" className="text-2xl font-bold text-primary flex items-center gap-2" as="h2">
@@ -496,11 +496,11 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                              )}
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent 
-                          side="bottom" 
+                        <SelectContent
+                          side="bottom"
                           avoidCollisions={false}
                           className={cn(
-                            converterMode === 'advanced' ? 'max-h-[calc(100vh-300px)] overflow-y-auto' : ''
+                            converterMode === 'advanced' ? 'max-h-[calc(100vh-370px)] overflow-y-auto' : ''
                           )}
                         >
                           {categoriesForDropdown.map((cat) => (
@@ -672,3 +672,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
