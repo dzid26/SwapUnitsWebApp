@@ -40,7 +40,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
       { name: 'Kilogram', symbol: 'kg', factor: 1, mode: 'all' },
       { name: 'Gram', symbol: 'g', factor: 0.001, mode: 'all' },
       { name: 'Milligram', symbol: 'mg', factor: 0.000001, mode: 'all' },
-      { name: 'Metric Ton', symbol: 't', factor: 1000, mode: 'advanced' },
+      { name: 'Metric Ton', symbol: 't', factor: 1000, mode: 'all' }, // Changed from 'advanced' to 'all'
       { name: 'Pound', symbol: 'lb', factor: 0.453592, mode: 'all' },
       { name: 'Ounce', symbol: 'oz', factor: 0.0283495, mode: 'all' },
     ],
@@ -346,7 +346,7 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
             if(finalPresets.length < 15) {
                 finalPresets.splice(4, 0, btcPreset); // Insert at 5th position (index 4)
                  // Remove duplicates that might have been pushed to the end if category count was already 1 for Bitcoin
-                const uniqueNames = new Set();
+                const uniqueNames = new Set<string>();
                 finalPresets = finalPresets.filter(p => {
                     const duplicate = uniqueNames.has(p.name + p.category);
                     uniqueNames.add(p.name+p.category);
@@ -372,4 +372,5 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
      // Ensure category order is respected after all manipulations and list is capped at 15
     return finalPresets.sort((a,b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)).slice(0,15);
 };
+
 
