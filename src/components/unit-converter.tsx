@@ -430,7 +430,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
             </CardTitle>
             <div className="flex items-center gap-2 mt-2 sm:mt-0">
               <Label htmlFor="mode-toggle" className="text-sm font-medium whitespace-nowrap">
-                Advanced Mode
+                Advanced
               </Label>
               <Switch
                 id="mode-toggle"
@@ -650,3 +650,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
