@@ -109,9 +109,6 @@ export default function Home() {
       };
       // Reset to basic mode and apply initial preset
       setConverterMode('basic'); 
-      // Ensure unitConverterRef.current is available and then call handlePresetSelect
-      // This might need a slight delay or ensure state update completes first
-      // For simplicity, directly calling. If issues, consider useEffect on converterMode change in UnitConverter
       Promise.resolve().then(() => {
         if (unitConverterRef.current) {
           unitConverterRef.current.handlePresetSelect(initialPreset);
@@ -189,20 +186,7 @@ export default function Home() {
         </div>
 
         <div className="flex items-center justify-end w-1/3 gap-2">
-          {isMobile && (
-            <div className="flex items-center gap-1">
-              <Label htmlFor="header-mode-toggle" className="text-xs font-medium text-foreground">
-                Adv
-              </Label>
-              <Switch
-                id="header-mode-toggle"
-                checked={converterMode === 'advanced'}
-                onCheckedChange={(checked) => setConverterMode(checked ? 'advanced' : 'basic')}
-                aria-label="Toggle advanced mode"
-                style={{ transform: 'scale(0.80)', transformOrigin: 'center right' }} 
-              />
-            </div>
-          )}
+          {/* Mobile Advanced Toggle was here, now moved to UnitConverter component */}
           <BookmarkButton />
         </div>
       </header>
@@ -218,7 +202,7 @@ export default function Home() {
             ref={unitConverterRef} 
             className="h-full"
             converterMode={converterMode}
-            setConverterMode={setConverterMode} // Pass down setConverterMode
+            setConverterMode={setConverterMode} 
           />
         </main>
 
