@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Menu, RefreshCw, List } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 
@@ -44,7 +46,7 @@ const jsonLd = {
     'Length Conversion (m, ft, km, mi, in, cm, µm, nm)',
     'Mass Conversion (kg, lb, g, oz, t, mg)',
     'Temperature Conversion (°C, °F, K)',
-    'Time Conversion (s, min, hr, day, ms, µs, ns, ps, fs)', 
+    'Time Conversion (s, min, hr, day, ms, µs, ns, ps, fs, yr)', 
     'Pressure Conversion (Pa, kPa, bar, atm, psi)',
     'Area Conversion (m², ft², km², mi², ha, acre, cm², mm²)',
     'Volume Conversion (L, mL, m³, ft³, gal, qt, pt, cup, fl oz, tbsp, tsp, km³, cm³, mm³, in³)',
@@ -56,7 +58,7 @@ const jsonLd = {
     'Bitcoin Conversion (BTC, sat)',
     'Ethereum Conversion (ETH, gwei, wei)',
     'EM Frequency & Wavelength Conversion (THz, GHz, MHz, kHz, Hz, mHz, km (λ), m (λ), cm (λ), mm (λ), µm (λ), nm (λ))',
-    'Sound Frequency & Wavelength Conversion (THz Sound, GHz Sound, MHz Sound, kHz Sound, Hz Sound, mHz Sound, km (Sound λ), m (Sound λ), cm (Sound λ), mm (Sound λ), µm (Sound λ), nm (Sound λ))',
+    'Sound Frequency & Wavelength Conversion (THz, GHz, MHz, kHz, Hz, mHz, km (λ), m (λ), cm (λ), mm (λ), µm (λ), nm (λ))',
     'Metric Units',
     'Imperial Units',
     'Scientific Notation Option',
@@ -70,7 +72,7 @@ const jsonLd = {
     price: '0',
     priceCurrency: 'USD',
   },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond, EM frequency, sound frequency, wavelength, THz, GHz, nm, SPL, Pa",
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond, EM frequency, sound frequency, wavelength, THz, GHz, nm, Pa, yr",
 };
 
 
@@ -80,7 +82,7 @@ export default function Home() {
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic');
 
-  const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
+  const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(converterMode), [converterMode]);
 
   const onMobilePresetSelect = (preset: Preset) => {
     if (unitConverterRef.current) {
@@ -100,13 +102,21 @@ export default function Home() {
 
     if (unitConverterRef.current) {
       const initialPreset: Preset = {
-        category: 'Mass' as UnitCategory, // Ensure category is of type UnitCategory
+        category: 'Mass' as UnitCategory, 
         fromUnit: 'kg',
         toUnit: 'g',
         name: 'InitialReset', 
       };
-      unitConverterRef.current.handlePresetSelect(initialPreset);
+      // Reset to basic mode and apply initial preset
       setConverterMode('basic'); 
+      // Ensure unitConverterRef.current is available and then call handlePresetSelect
+      // This might need a slight delay or ensure state update completes first
+      // For simplicity, directly calling. If issues, consider useEffect on converterMode change in UnitConverter
+      Promise.resolve().then(() => {
+        if (unitConverterRef.current) {
+          unitConverterRef.current.handlePresetSelect(initialPreset);
+        }
+      });
     }
   };
 
@@ -133,10 +143,12 @@ export default function Home() {
                   <SheetHeader className="p-4 border-b">
                     <SheetTitle className="text-lg font-semibold text-primary flex items-center gap-2">
                       <List className="h-5 w-5" aria-hidden="true" />
-                      Common Conversions
+                      Menu
                     </SheetTitle>
                   </SheetHeader>
+                  
                   <div className="p-4">
+                    <h3 className="text-md font-semibold text-foreground mb-3">Common Conversions</h3>
                     <ul className="space-y-2">
                       {displayPresets.map((preset, index) => (
                         <li key={`${preset.category}-${preset.name}-${index}`}>
@@ -176,15 +188,29 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="flex items-center justify-end w-1/3">
-            <BookmarkButton />
+        <div className="flex items-center justify-end w-1/3 gap-2">
+          {isMobile && (
+            <div className="flex items-center gap-1">
+              <Label htmlFor="header-mode-toggle" className="text-xs font-medium text-foreground">
+                Adv
+              </Label>
+              <Switch
+                id="header-mode-toggle"
+                checked={converterMode === 'advanced'}
+                onCheckedChange={(checked) => setConverterMode(checked ? 'advanced' : 'basic')}
+                aria-label="Toggle advanced mode"
+                style={{ transform: 'scale(0.80)', transformOrigin: 'center right' }} 
+              />
+            </div>
+          )}
+          <BookmarkButton />
         </div>
       </header>
 
       <div className={cn(
         "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch",
         "pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20",
-        "md:grid-cols-[1fr_auto] md:gap-8" 
+        !isMobile && "md:grid-cols-[1fr_auto] md:gap-8" 
       )}>
         <main className="flex flex-col items-center w-full md:col-span-1" role="main">
           <Toaster />
@@ -192,13 +218,15 @@ export default function Home() {
             ref={unitConverterRef} 
             className="h-full"
             converterMode={converterMode}
-            setConverterMode={setConverterMode}
+            setConverterMode={setConverterMode} // Pass down setConverterMode
           />
         </main>
 
-        <aside className="hidden md:block md:col-span-1 max-w-[280px]" role="complementary">
-          <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
-        </aside>
+        {!isMobile && (
+          <aside className="hidden md:block md:col-span-1 max-w-[280px]" role="complementary">
+            <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
+          </aside>
+        )}
       </div>
       <Footer />
     </>
