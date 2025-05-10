@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ConversionResult, NumberFormat } from '@/types';
@@ -64,8 +63,15 @@ const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
     } else {
         // Default 'normal' formatting
         actualFormatUsed = 'normal';
-        // Format with commas and appropriate decimal places (up to 7)
-        formattedString = num.toLocaleString(undefined, { maximumFractionDigits: 7 });
+        // Round to 7 decimal places for the check
+        const numRoundedForCheck = parseFloat(num.toFixed(7));
+        if (numRoundedForCheck % 1 === 0) {
+            // If the number (after rounding for display) is an integer
+            formattedString = numRoundedForCheck.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        } else {
+            // Otherwise, format with up to 7 decimal places
+            formattedString = num.toLocaleString(undefined, { maximumFractionDigits: 7 });
+        }
     }
 
     return { formattedString, actualFormatUsed, scientificReason }; // Return reason
@@ -95,8 +101,13 @@ const formatFromValue = (num: number | undefined): string => {
         }
         return exponential; // Fallback
     }
-    // Use up to 7 decimal places for the input value display as well
-    return num.toLocaleString(undefined, { maximumFractionDigits: 7 });
+    // Refined normal formatting for fromValue
+    const numRoundedForCheck = parseFloat(num.toFixed(7));
+    if (numRoundedForCheck % 1 === 0) {
+        return numRoundedForCheck.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    } else {
+        return num.toLocaleString(undefined, { maximumFractionDigits: 7 });
+    }
 };
 
 
