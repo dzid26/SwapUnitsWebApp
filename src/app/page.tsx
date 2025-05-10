@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Footer } from "@/components/footer";
 import { PresetList } from "@/components/preset-list"; 
 import { UnitIcon } from '@/components/unit-icon'; 
-import { getFilteredAndSortedPresets } from '@/lib/unit-data'; 
+import { unitData, getFilteredAndSortedPresets } from '@/lib/unit-data'; 
 import type { Preset, ConverterMode, UnitCategory } from '@/types'; 
 
 import { useIsMobile } from '@/hooks/use-mobile';
