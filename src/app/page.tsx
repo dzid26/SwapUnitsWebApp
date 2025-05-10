@@ -176,7 +176,7 @@ export default function Home() {
                     <div className="flex w-full">
                        <SheetClose asChild>
                         <Button
-                          variant={converterMode === 'basic' ? 'default' : 'outline'}
+                          variant={converterMode === 'basic' ? 'secondary' : 'outline'}
                           onClick={() => {
                             if (converterMode !== 'basic') {
                               setConverterMode('basic');
@@ -190,7 +190,7 @@ export default function Home() {
                       </SheetClose>
                       <SheetClose asChild>
                         <Button
-                          variant={converterMode === 'advanced' ? 'default' : 'outline'}
+                          variant={converterMode === 'advanced' ? 'secondary' : 'outline'}
                           onClick={() => {
                             if (converterMode !== 'advanced') {
                               setConverterMode('advanced');
@@ -276,3 +276,4 @@ export default function Home() {
     </>
   );
 }
+
