@@ -178,9 +178,9 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Satoshi', symbol: 'sat', factor: 1e-8, mode: 'all' },
         ],
     },
-    Ethereum: {
+    Ethereum: { // Ethereum category will only be available in advanced mode
         name: 'Ethereum',
-        units: [
+        units: [ // All Ethereum units are advanced
             { name: 'Ether', symbol: 'ETH', factor: 1e18, mode: 'advanced' }, // Base unit is Wei
             { name: 'Gwei', symbol: 'gwei', factor: 1e9, mode: 'advanced' },
             { name: 'Wei', symbol: 'wei', factor: 1, mode: 'advanced' },
@@ -223,9 +223,9 @@ export const allPresets: Preset[] = [
 ];
 
 const categoryOrder: UnitCategory[] = [
-  'Length', 'Mass', 'Temperature', 'Time', 'Bitcoin', 'Ethereum',
+  'Length', 'Mass', 'Temperature', 'Time', 'Bitcoin', // Ethereum will only show in advanced mode anyway
   'Pressure', 'Area', 'Volume', 'Energy', 'Speed',
-  'Fuel Economy', 'Data Storage', 'Data Transfer Rate',
+  'Fuel Economy', 'Data Storage', 'Data Transfer Rate', 'Ethereum' // Add Ethereum to the end for consistent ordering when available
 ];
 
 export const getUnitsForCategoryAndMode = (category: UnitCategory | "", mode: ConverterMode): Unit[] => {
@@ -242,40 +242,43 @@ export const getUnitsForCategoryAndMode = (category: UnitCategory | "", mode: Co
 };
 
 export const getFilteredAndSortedPresets = (): Preset[] => {
-    const sortedPresets = [...allPresets].sort((a, b) => {
+    // Sort all presets based on categoryOrder first
+    const sortedByOrder = [...allPresets].sort((a, b) => {
         const indexA = categoryOrder.indexOf(a.category);
         const indexB = categoryOrder.indexOf(b.category);
-        if (indexA === -1 && indexB === -1) return 0; // Both categories not in order, maintain relative order
-        if (indexA === -1) return 1;  // a is not in order, b is: b comes first
-        if (indexB === -1) return -1; // b is not in order, a is: a comes first
-        return indexA - indexB; // Both in order, sort by their index
+        if (indexA === -1 && indexB === -1) return 0;
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
     });
 
     const finalPresets: Preset[] = [];
     const categoryCounts: Record<string, number> = {};
 
-    // Ensure at least one preset per category, respecting the order
-    categoryOrder.forEach(category => {
-        const presetForCategory = sortedPresets.find(p => p.category === category);
-        if (presetForCategory && finalPresets.length < 15) {
-            // Check if this specific preset (by name and category) is already added
-            const isAlreadyAdded = finalPresets.some(fp =>
+    // Pass 1: Ensure at least one preset per *ordered* category (up to the limit of 15)
+    categoryOrder.forEach(catName => {
+        if (finalPresets.length >= 15) return;
+
+        // For Ethereum, only consider its presets if we assume it could be shown (even if filtered later by UI mode)
+        // The filtering here is about which *presets* to list, not which *categories* are active in the UI.
+        // This function provides the full list of potential presets to display.
+        const presetForCategory = sortedByOrder.find(p => p.category === catName);
+        if (presetForCategory) {
+             const isAlreadyAdded = finalPresets.some(fp =>
                 fp.name === presetForCategory.name && fp.category === presetForCategory.category
             );
             if (!isAlreadyAdded) {
                 finalPresets.push(presetForCategory);
-                categoryCounts[category] = 1;
+                categoryCounts[catName] = (categoryCounts[catName] || 0) + 1;
             }
         }
     });
 
-
-    // Fill up to 15 presets, ensuring no more than 2 per category
-    sortedPresets.forEach(preset => {
+    // Pass 2: Fill remaining slots up to 15, with max 2 per category, respecting original sort order
+    sortedByOrder.forEach(preset => {
         if (finalPresets.length >= 15) return;
 
         const currentCount = categoryCounts[preset.category] || 0;
-        // Check if this specific preset (by name and category) is already added
         const isAlreadyAdded = finalPresets.some(fp =>
            fp.name === preset.name && fp.category === preset.category
         );
@@ -285,38 +288,58 @@ export const getFilteredAndSortedPresets = (): Preset[] => {
             categoryCounts[preset.category] = currentCount + 1;
         }
     });
-
-
-    // Specific request to include 'km/L to MPG (UK)' if space allows or by replacing
+    
+    // Ensure the "km/L to MPG (UK)" preset is included if possible
     const lastRequestedPresetName = 'km/L to MPG (UK)';
-    const hasLastRequested = finalPresets.some(p => p.name === lastRequestedPresetName && p.category === 'Fuel Economy');
+    const lastRequestedPresetCategory: UnitCategory = 'Fuel Economy';
+    const hasLastRequested = finalPresets.some(p => p.name === lastRequestedPresetName && p.category === lastRequestedPresetCategory);
 
     if (!hasLastRequested) {
-        const lastRequestedPreset = allPresets.find(p => p.name === lastRequestedPresetName && p.category === 'Fuel Economy');
-        if (lastRequestedPreset) {
+        const presetToAdd = allPresets.find(p => p.name === lastRequestedPresetName && p.category === lastRequestedPresetCategory);
+        if (presetToAdd) {
             if (finalPresets.length < 15) {
-                finalPresets.push(lastRequestedPreset);
+                finalPresets.push(presetToAdd);
+                 // Re-sort based on categoryOrder after adding
+                finalPresets.sort((a, b) => {
+                    const indexA = categoryOrder.indexOf(a.category);
+                    const indexB = categoryOrder.indexOf(b.category);
+                    if (indexA === -1 && indexB === -1) return 0;
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
+                });
             } else {
-                // Attempt to replace a preset from a category that has 2, preferrably not the first of its kind
-                 // Or, if all have 1, replace the very last one if it's not 'critical' (e.g., bitcoin or ethereum)
+                // Attempt to replace a less critical preset
+                // Try to find a category with 2 presets that is not Bitcoin or Ethereum to replace its second instance
                 let replaced = false;
-                for (let i = finalPresets.length -1; i >= 0; i--) {
+                for (let i = finalPresets.length - 1; i >= 0; i--) {
                     const cat = finalPresets[i].category;
                     if (categoryCounts[cat] > 1 && cat !== 'Bitcoin' && cat !== 'Ethereum') {
-                         // Try to replace the second preset of a category
+                        // Find the first occurrence of this category
                         const firstIndexOfCat = finalPresets.findIndex(fp => fp.category === cat);
-                        if (i !== firstIndexOfCat) { // if it's not the first one
-                            finalPresets[i] = lastRequestedPreset;
+                        if (i !== firstIndexOfCat) { // if it's not the first one for this category
+                            finalPresets[i] = presetToAdd;
                             replaced = true;
+                             finalPresets.sort((a, b) => { /* re-sort */
+                                const indexA = categoryOrder.indexOf(a.category);
+                                const indexB = categoryOrder.indexOf(b.category);
+                                return indexA - indexB;
+                            });
                             break;
                         }
                     }
                 }
-                if (!replaced && finalPresets.length > 0 && finalPresets[finalPresets.length -1].category !== 'Bitcoin' && finalPresets[finalPresets.length -1].category !== 'Ethereum') {
-                     // Fallback: replace the very last item if not Bitcoin/Ethereum
-                     finalPresets[finalPresets.length - 1] = lastRequestedPreset;
+                // If not replaced, and the last item is not Bitcoin/Ethereum, replace it
+                if (!replaced && finalPresets.length > 0 && 
+                    finalPresets[finalPresets.length - 1].category !== 'Bitcoin' && 
+                    finalPresets[finalPresets.length - 1].category !== 'Ethereum') {
+                     finalPresets[finalPresets.length - 1] = presetToAdd;
+                     finalPresets.sort((a, b) => { /* re-sort */
+                        const indexA = categoryOrder.indexOf(a.category);
+                        const indexB = categoryOrder.indexOf(b.category);
+                        return indexA - indexB;
+                    });
                 }
-
             }
         }
     }

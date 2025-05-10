@@ -17,13 +17,40 @@ import {
   Network, // For Data Transfer Rate (or Wifi)
   // Bitcoin icon
   Bitcoin,
-  Sigma, // For Ethereum as a generic value/crypto symbol
 } from 'lucide-react';
 import type { UnitCategory } from '@/types';
 
 interface UnitIconProps extends React.SVGProps<SVGSVGElement> {
     category: UnitCategory | string; // Allow string type for flexibility
 }
+
+// Ethereum Icon SVG
+const EthereumIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M12 1.75L18.9282 9L12 12.5L5.0718 9L12 1.75Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M5.0718 15L12 22.25L18.9282 15L12 11.5L5.0718 15Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 
 // Memoize the component to prevent unnecessary re-renders when props haven't changed
 export const UnitIcon = React.memo(function UnitIconComponent({ category, ...props }: UnitIconProps) {
@@ -55,7 +82,7 @@ export const UnitIcon = React.memo(function UnitIconComponent({ category, ...pro
     case 'Bitcoin':
         return <Bitcoin {...props} />;
     case 'Ethereum':
-        return <Sigma {...props} />; // Using Sigma for Ethereum
+        return <EthereumIcon {...props} />; // Using custom Ethereum Icon
     default:
       return <HelpCircle {...props} />;
   }

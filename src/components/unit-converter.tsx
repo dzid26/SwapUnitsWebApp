@@ -67,13 +67,13 @@ export interface UnitConverterHandle {
 
 
 export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, converterMode, setConverterMode, ...props }, ref) {
-  const [selectedCategory, setSelectedCategory] = React.useState<UnitCategory | "">("");
+  const [selectedCategoryLocal, setSelectedCategoryLocal] = React.useState<UnitCategory | "">(""); // Tracks the category after successful setup
   const [conversionResult, setConversionResult] = React.useState<ConversionResult | null>(null);
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1);
   const [numberFormat, setNumberFormat] = React.useState<NumberFormat>('normal');
   const [isNormalFormatDisabled, setIsNormalFormatDisabled] = React.useState<boolean>(false);
   const isMobile = useIsMobile();
-  const [prevConverterMode, setPrevConverterMode] = React.useState<ConverterMode>(converterMode);
+  const [prevConverterModeLocal, setPrevConverterModeLocal] = React.useState<ConverterMode>(converterMode);
 
 
   const form = useForm<FormData>({
@@ -87,11 +87,18 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
     },
   });
 
-  const { watch, setValue, reset, getValues } = form;
-  const currentCategory = watch("category");
-  const fromUnitValue = watch("fromUnit");
-  const toUnitValue = watch("toUnit");
-  const inputValue = watch("value");
+  const { watch, setValue, reset, getValues, formState } = form;
+  const rhfCategory = watch("category") as UnitCategory; // Category from react-hook-form
+  const rhfFromUnit = watch("fromUnit");
+  const rhfToUnit = watch("toUnit");
+  const rhfValue = watch("value");
+
+  const categoriesForDropdown = React.useMemo(() => {
+    return (Object.keys(unitData) as UnitCategory[]).filter(category => {
+        const units = getUnitsForCategoryAndMode(category, converterMode);
+        return units.length > 0;
+    });
+  }, [converterMode]);
 
 
   const convertUnits = React.useCallback((data: Partial<FormData>): ConversionResult | null => {
@@ -157,19 +164,40 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 
  React.useEffect(() => {
-    const categoryChanged = currentCategory !== selectedCategory;
-    const modeActuallyChanged = prevConverterMode !== converterMode;
+    const modeChanged = prevConverterModeLocal !== converterMode;
+    let categoryToProcess = rhfCategory;
 
-    if (currentCategory && (categoryChanged || modeActuallyChanged)) {
-        const newCategory = currentCategory as UnitCategory;
-        const availableUnits = getUnitsForCategoryAndMode(newCategory, converterMode);
+    if (modeChanged) {
+        const isRhfCategoryValidInNewMode = getUnitsForCategoryAndMode(rhfCategory, converterMode).length > 0;
+        if (!isRhfCategoryValidInNewMode) {
+            // Category from RHF (e.g., Ethereum) is NOT valid in the new mode (e.g., basic)
+            // Reset to the first valid category for the new mode.
+            categoryToProcess = categoriesForDropdown[0] || 'Mass';
+            setValue("category", categoryToProcess, { shouldValidate: true, shouldDirty: true });
+            // Update local state trackers immediately for the rest of this effect run
+            setSelectedCategoryLocal(categoryToProcess);
+            setPrevConverterModeLocal(converterMode);
+            // This will cause rhfCategory to update in the next render cycle,
+            // but for this cycle, use categoryToProcess.
+        }
+    }
 
-        let newFromUnitSymbol = fromUnitValue;
-        let newToUnitSymbol = toUnitValue;
+    const categoryChangedSystemOrUser = categoryToProcess !== selectedCategoryLocal || modeChanged;
 
-        if (categoryChanged || modeActuallyChanged) {
-            // Determine default units based on category and mode
-            switch (newCategory) {
+    if (categoryChangedSystemOrUser && categoryToProcess) {
+        const availableUnits = getUnitsForCategoryAndMode(categoryToProcess, converterMode);
+        
+        let newFromUnitSymbol = rhfFromUnit;
+        let newToUnitSymbol = rhfToUnit;
+        let resetValue = false;
+
+        // Determine if units need to be reset to defaults
+        const fromUnitStillValid = availableUnits.some(u => u.symbol === newFromUnitSymbol);
+        const toUnitStillValid = availableUnits.some(u => u.symbol === newToUnitSymbol);
+
+        if (categoryToProcess !== selectedCategoryLocal || modeChanged || !fromUnitStillValid || !toUnitStillValid) {
+            resetValue = true; // Always reset value if category/mode changed or units became invalid
+            switch (categoryToProcess) {
                 case 'Length': newFromUnitSymbol = 'm'; newToUnitSymbol = 'ft'; break;
                 case 'Mass': newFromUnitSymbol = 'kg'; newToUnitSymbol = 'g'; break;
                 case 'Temperature': newFromUnitSymbol = '°C'; newToUnitSymbol = '°F'; break;
@@ -192,116 +220,142 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     newToUnitSymbol = availableUnits.find(u => u.symbol !== newFromUnitSymbol)?.symbol || newFromUnitSymbol;
             }
 
-            // Ensure chosen defaults are in availableUnits
             if (!availableUnits.some(u => u.symbol === newFromUnitSymbol)) {
                 newFromUnitSymbol = availableUnits[0]?.symbol || "";
             }
             if (!availableUnits.some(u => u.symbol === newToUnitSymbol) || newFromUnitSymbol === newToUnitSymbol) {
                 newToUnitSymbol = availableUnits.find(u => u.symbol !== newFromUnitSymbol)?.symbol || (availableUnits[0]?.symbol || "");
                  if (newFromUnitSymbol === newToUnitSymbol && availableUnits.length > 1) {
-                    newToUnitSymbol = availableUnits[1]?.symbol || ""; 
+                    newToUnitSymbol = availableUnits[1]?.symbol || "";
                 } else if (newFromUnitSymbol === newToUnitSymbol && availableUnits.length === 1) {
-                    newToUnitSymbol = newFromUnitSymbol; // Only one unit available
+                    newToUnitSymbol = newFromUnitSymbol;
                 }
             }
+            setValue("fromUnit", newFromUnitSymbol, { shouldValidate: true, shouldDirty: true });
+            setValue("toUnit", newToUnitSymbol, { shouldValidate: true, shouldDirty: true });
         }
         
-        setValue("fromUnit", newFromUnitSymbol, { shouldValidate: true, shouldDirty: true });
-        setValue("toUnit", newToUnitSymbol, { shouldValidate: true, shouldDirty: true });
-        
-        if (categoryChanged || modeActuallyChanged) {
+        if (resetValue) {
             setValue("value", 1, { shouldValidate: true, shouldDirty: true });
             setLastValidInputValue(1);
             setNumberFormat('normal');
             setIsNormalFormatDisabled(false);
         }
         
-        setSelectedCategory(newCategory);
-        setPrevConverterMode(converterMode);
+        setSelectedCategoryLocal(categoryToProcess);
+        if(modeChanged) setPrevConverterModeLocal(converterMode);
 
-        setTimeout(() => {
+        // Trigger conversion with potentially updated units/value
+        // Use a microtask to ensure RHF state is settled from setValue calls
+        Promise.resolve().then(() => {
             const currentVals = getValues();
             const valToConvert = (typeof currentVals.value === 'string' && (isNaN(parseFloat(currentVals.value)) || currentVals.value.trim() === '')) || currentVals.value === undefined ? 1 : Number(currentVals.value);
-            const result = convertUnits({...currentVals, value: valToConvert, fromUnit: newFromUnitSymbol, toUnit: newToUnitSymbol });
+            const result = convertUnits({ ...currentVals, value: valToConvert });
             setConversionResult(result);
-        }, 0);
+        });
     }
- }, [currentCategory, converterMode, setValue, getValues, convertUnits, selectedCategory, fromUnitValue, toUnitValue, prevConverterMode]);
+ }, [rhfCategory, converterMode, setValue, getValues, convertUnits, selectedCategoryLocal, rhfFromUnit, rhfToUnit, prevConverterModeLocal, categoriesForDropdown]);
 
 
+  // Effect for input value changes or unit changes (when category and mode are stable)
   React.useEffect(() => {
-    const formData = getValues();
-    const { category, fromUnit, toUnit, value } = formData;
-    const numericValue = Number(value);
+    // This effect should only run if category and mode haven't just changed (handled by above effect)
+    if (rhfCategory === selectedCategoryLocal && converterMode === prevConverterModeLocal) {
+        const formData = getValues();
+        const { category, fromUnit, toUnit, value } = formData;
+        const numericValue = Number(value);
 
-    if (category && fromUnit && toUnit && value !== '' && !isNaN(numericValue) && isFinite(numericValue)) {
-       setLastValidInputValue(numericValue);
-       const result = convertUnits(formData);
-       setConversionResult(result);
-    } else if (category && fromUnit && toUnit && (value === '' || value === '-')) {
-        setConversionResult(null);
-        setIsNormalFormatDisabled(false);
-    } else {
-       setConversionResult(null);
-       setIsNormalFormatDisabled(false);
+        if (category && fromUnit && toUnit && value !== '' && !isNaN(numericValue) && isFinite(numericValue)) {
+           setLastValidInputValue(numericValue);
+           const result = convertUnits(formData);
+           setConversionResult(result);
+        } else if (category && fromUnit && toUnit && (value === '' || value === '-')) {
+            setConversionResult(null); // Keep last valid input, but no result
+            //setIsNormalFormatDisabled(false); // Reset format disable when input is cleared
+        } else {
+           // Potentially invalid intermediate state, do nothing or clear result
+           setConversionResult(null);
+           // setIsNormalFormatDisabled(false);
+        }
     }
-  }, [inputValue, fromUnitValue, toUnitValue, currentCategory, convertUnits, getValues]);
+  }, [rhfValue, rhfFromUnit, rhfToUnit, rhfCategory, converterMode, selectedCategoryLocal, prevConverterModeLocal, getValues, convertUnits]);
 
 
    React.useEffect(() => {
-     if (selectedCategory === "") { 
+     // Initial setup only if selectedCategoryLocal is not yet set
+     if (selectedCategoryLocal === "") { 
         const initialFormData = getValues();
-        if(initialFormData.category && initialFormData.fromUnit && initialFormData.toUnit && initialFormData.value !== undefined ) {
-            const initialValue = (!isNaN(Number(initialFormData.value)) && isFinite(Number(initialFormData.value))) ? Number(initialFormData.value) : 1;
-            if (initialValue !== initialFormData.value) {
-                setValue("value", initialValue, { shouldValidate: false }); 
-            }
-            setLastValidInputValue(initialValue);
-            setSelectedCategory(initialFormData.category as UnitCategory);
-            setPrevConverterMode(converterMode); 
+        const initialCategory = initialFormData.category as UnitCategory;
+        
+        setSelectedCategoryLocal(initialCategory);
+        setPrevConverterModeLocal(converterMode);
 
-            const initialAvailableUnits = getUnitsForCategoryAndMode(initialFormData.category as UnitCategory, converterMode);
-            let initialFrom = initialFormData.fromUnit;
-            let initialTo = initialFormData.toUnit;
+        const initialAvailableUnits = getUnitsForCategoryAndMode(initialCategory, converterMode);
+        let initialFrom = initialFormData.fromUnit;
+        let initialTo = initialFormData.toUnit;
 
-            if (initialFormData.category === 'Mass') initialTo = 'g';
-
+        // Set specific defaults for initial load if needed (e.g. Mass: kg to g)
+        if (initialCategory === 'Mass' && initialFormData.fromUnit === 'kg' && initialFormData.toUnit !== 'g') {
+           initialTo = 'g';
+           setValue("toUnit", initialTo, { shouldValidate: false });
+        } else {
             if (!initialAvailableUnits.some(u => u.symbol === initialFrom)) {
                 initialFrom = initialAvailableUnits[0]?.symbol || "";
+                setValue("fromUnit", initialFrom, { shouldValidate: false });
             }
             if (!initialAvailableUnits.some(u => u.symbol === initialTo) || initialFrom === initialTo) {
                 initialTo = initialAvailableUnits.find(u => u.symbol !== initialFrom)?.symbol || initialFrom;
+                if (initialFrom === initialTo && initialAvailableUnits.length > 1) {
+                     initialTo = initialAvailableUnits[1]?.symbol || initialFrom;
+                }
+                setValue("toUnit", initialTo, { shouldValidate: false });
             }
-            
-            setValue("fromUnit", initialFrom, { shouldValidate: false });
-            setValue("toUnit", initialTo, { shouldValidate: false });
-
-            const initialResult = convertUnits({...initialFormData, value: initialValue, fromUnit: initialFrom, toUnit: initialTo });
-            setConversionResult(initialResult);
-            setNumberFormat('normal'); 
-            setIsNormalFormatDisabled(false); 
         }
+        
+        const initialValue = (initialFormData.value === undefined || isNaN(Number(initialFormData.value))) ? 1 : Number(initialFormData.value);
+        if (String(initialFormData.value) !== String(initialValue)) { // Avoid unnecessary update if already a number
+             setValue("value", initialValue, { shouldValidate: false });
+        }
+        setLastValidInputValue(initialValue);
+
+        const initialResult = convertUnits({...initialFormData, category: initialCategory, fromUnit: initialFrom, toUnit: initialTo, value: initialValue });
+        setConversionResult(initialResult);
+        setNumberFormat('normal'); 
+        setIsNormalFormatDisabled(false); 
      }
-   }, []); 
+   }, []); // Ran once on mount
 
 
   const internalHandlePresetSelect = React.useCallback((preset: Preset) => {
     const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
     if (!presetCategory) return;
     
-    const newMode = getUnitsForCategoryAndMode(presetCategory, 'advanced').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit) &&
-                    !getUnitsForCategoryAndMode(presetCategory, 'basic').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit)
-                    ? 'advanced' 
-                    : converterMode;
-    
-    if (newMode !== converterMode) {
-      setConverterMode(newMode);
+    // Determine if the preset requires advanced mode
+    const presetIsAdvancedOnly = unitData[presetCategory].units.find(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit)?.mode === 'advanced' &&
+                                !unitData[presetCategory].units.filter(u => u.mode !== 'advanced').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit);
+
+    let modeForPreset = converterMode;
+    if (presetIsAdvancedOnly && converterMode === 'basic') {
+        modeForPreset = 'advanced';
+        setConverterMode('advanced'); // Update parent state
+    } else if (
+        !getUnitsForCategoryAndMode(presetCategory, 'basic').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit) &&
+        getUnitsForCategoryAndMode(presetCategory, 'advanced').some(u => u.symbol === preset.fromUnit || u.symbol === preset.toUnit) &&
+        converterMode === 'basic'
+    ) {
+        // This handles cases where a unit in a preset is *only* in advanced, even if the category itself has basic units
+        modeForPreset = 'advanced';
+        setConverterMode('advanced');
     }
-    
+
+
     setValue("category", presetCategory, { shouldValidate: true, shouldDirty: true });
     
-    setTimeout(() => {
-        const availableUnits = getUnitsForCategoryAndMode(presetCategory, newMode);
+    // Use a microtask or short timeout to allow state updates (mode, category) to propagate
+    Promise.resolve().then(() => {
+        const effectiveMode = modeForPreset; // Use the mode determined for this preset
+        const availableUnits = getUnitsForCategoryAndMode(presetCategory, effectiveMode);
+        
         const fromUnitValid = availableUnits.some(u => u.symbol === preset.fromUnit);
         const toUnitValid = availableUnits.some(u => u.symbol === preset.toUnit);
 
@@ -310,7 +364,6 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
          if (finalFromUnit === finalToUnit && availableUnits.length > 1) {
              finalToUnit = availableUnits.find(u=> u.symbol !== finalFromUnit)?.symbol || availableUnits[0]?.symbol || "";
          }
-
 
         reset({ 
             category: presetCategory,
@@ -322,11 +375,12 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         setNumberFormat('normal'); 
         setIsNormalFormatDisabled(false); 
 
-        setTimeout(() => {
-           const result = convertUnits(getValues());
+        // Another microtask for conversion after RHF state from reset is applied
+        Promise.resolve().then(() => {
+           const result = convertUnits(getValues()); // convertUnits will use the current converterMode prop
            setConversionResult(result);
-        }, 0)
-    }, 50);
+        });
+    });
 
   }, [setValue, reset, getValues, convertUnits, converterMode, setConverterMode]);
 
@@ -337,11 +391,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 
   const swapUnits = React.useCallback(() => {
-    const currentFrom = fromUnitValue;
-    const currentTo = toUnitValue;
-    setValue("fromUnit", currentTo, { shouldValidate: true });
-    setValue("toUnit", currentFrom, { shouldValidate: true });
-  }, [fromUnitValue, toUnitValue, setValue]);
+    setValue("fromUnit", rhfToUnit, { shouldValidate: true });
+    setValue("toUnit", rhfFromUnit, { shouldValidate: true });
+  }, [rhfFromUnit, rhfToUnit, setValue]);
 
     const handleActualFormatChange = React.useCallback((
         actualFormat: NumberFormat,
@@ -352,6 +404,11 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
         if (magnitudeForcedScientific && numberFormat === 'normal') {
             setNumberFormat('scientific'); 
+        } else if (!magnitudeForcedScientific && numberFormat === 'scientific' && reason !== 'user_choice'){
+            // If magnitude no longer forces scientific, and user didn't explicitly choose it,
+            // consider switching back to normal if it's now the default display.
+            // This part might need more nuanced logic based on desired UX.
+            // For now, if user selected scientific, it stays unless magnitude forces normal.
         }
     }, [numberFormat]); 
 
@@ -413,7 +470,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                       >
                         <FormControl>
                           <SelectTrigger id="category-select" aria-label="Select measurement category">
-                             {field.value ? (
+                             {field.value && unitData[field.value as UnitCategory] ? ( // Check if field.value is a valid key
                                <div className="flex items-center gap-2">
                                  <UnitIcon category={field.value as UnitCategory} className="h-4 w-4" aria-hidden="true"/>
                                  {unitData[field.value as UnitCategory]?.name ?? 'Select Category'}
@@ -424,7 +481,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent side="bottom" avoidCollisions={false}>
-                          {Object.keys(unitData).map((cat) => (
+                          {categoriesForDropdown.map((cat) => (
                             <SelectItem key={cat} value={cat}>
                                <div className="flex items-center gap-2">
                                   <UnitIcon category={cat as UnitCategory} className="h-4 w-4" aria-hidden="true"/>
@@ -440,7 +497,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                   )}
                 />
 
-                {currentCategory && ( 
+                {rhfCategory && ( 
                   <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-end">
                     <FormField
                       control={form.control}
@@ -451,7 +508,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           <Select
                             onValueChange={(value) => field.onChange(value)}
                             value={field.value}
-                            disabled={!currentCategory}
+                            disabled={!rhfCategory}
                           >
                             <FormControl>
                               <SelectTrigger id="from-unit-select" aria-label="Select the unit to convert from">
@@ -459,7 +516,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {getUnitsForCategoryAndMode(currentCategory as UnitCategory, converterMode).map((unit) => (
+                              {getUnitsForCategoryAndMode(rhfCategory, converterMode).map((unit) => (
                                 <SelectItem key={unit.symbol} value={unit.symbol}>
                                   {unit.name} ({unit.symbol})
                                 </SelectItem>
@@ -475,7 +532,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                       type="button"
                       variant="outline"
                       onClick={swapUnits}
-                      disabled={!fromUnitValue || !toUnitValue}
+                      disabled={!rhfFromUnit || !rhfToUnit}
                       className="h-10 w-full sm:w-10 justify-self-center sm:justify-self-auto" 
                       aria-label="Swap from and to units"
                     >
@@ -491,7 +548,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           <Select
                             onValueChange={(value) => field.onChange(value)}
                             value={field.value}
-                            disabled={!currentCategory}
+                            disabled={!rhfCategory}
                           >
                             <FormControl>
                               <SelectTrigger id="to-unit-select" aria-label="Select the unit to convert to">
@@ -499,7 +556,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {getUnitsForCategoryAndMode(currentCategory as UnitCategory, converterMode).map((unit) => (
+                              {getUnitsForCategoryAndMode(rhfCategory, converterMode).map((unit) => (
                                 <SelectItem key={unit.symbol} value={unit.symbol}>
                                   {unit.name} ({unit.symbol})
                                 </SelectItem>
@@ -533,7 +590,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                               }
                           }}
                            value={(field.value === '' || field.value === '-') ? field.value : (isNaN(Number(field.value)) ? '' : String(field.value))}
-                          disabled={!fromUnitValue || !toUnitValue} 
+                          disabled={!rhfFromUnit || !rhfToUnit} 
                           aria-required="true"
                           className="border-primary" 
                         />
@@ -545,7 +602,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 />
                  <ConversionDisplay
                   fromValue={lastValidInputValue} 
-                  fromUnit={fromUnitValue ?? ''} 
+                  fromUnit={rhfFromUnit ?? ''} 
                   result={conversionResult}
                   format={numberFormat}
                   onActualFormatChange={handleActualFormatChange}
@@ -584,7 +641,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                      </RadioGroup>
                   </fieldset>
                 </div> 
-                <div className="flex-grow"></div>
+                <div className="flex-grow"></div> {/* This pushes content up and allows card to match height */}
             </form>
           </Form>
         </CardContent>
