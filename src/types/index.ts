@@ -23,8 +23,8 @@ export type UnitCategory =
   | 'Data Transfer Rate'
   | 'Bitcoin'
   | 'Ethereum'
-  | 'EM Frequency' // Changed from Frequency
-  | 'Sound Frequency'; // Added new category
+  | 'EM Frequency' 
+  | 'Sound Frequency'; 
 
 export type UnitData = {
   name: string;
@@ -36,7 +36,6 @@ export type ConversionResult = {
   unit: string;
 };
 
-// Ensure Preset type matches the structure used in unit-data.ts and components
 export type Preset = {
     category: UnitCategory;
     fromUnit: string;
@@ -44,9 +43,16 @@ export type Preset = {
     name: string;
 };
 
-// Type for number formatting options
 export type NumberFormat = 'normal' | 'scientific';
 
-// Type for converter mode
 export type ConverterMode = 'basic' | 'advanced';
 
+export type ConversionHistoryItem = {
+  id: string;
+  category: UnitCategory;
+  fromValue: number;
+  fromUnit: string;
+  toValue: number;
+  toUnit: string;
+  timestamp: number;
+};

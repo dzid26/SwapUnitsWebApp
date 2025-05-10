@@ -5,17 +5,20 @@
 import * as React from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 import { UnitConverter, type UnitConverterHandle } from "@/components/unit-converter";
 import { BookmarkButton } from '@/components/bookmark-button';
 import { Toaster } from '@/components/ui/toaster';
 import { Footer } from "@/components/footer";
 import { PresetList } from "@/components/preset-list"; 
+import { HistoryList } from "@/components/history-list";
 import { UnitIcon } from '@/components/unit-icon'; 
 import { unitData, getFilteredAndSortedPresets } from '@/lib/unit-data'; 
-import type { Preset, ConverterMode, UnitCategory } from '@/types'; 
+import type { Preset, ConverterMode, UnitCategory, ConversionHistoryItem } from '@/types'; 
 
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useConversionHistory } from '@/hooks/use-conversion-history';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -26,51 +29,29 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, Settings2 } from 'lucide-react'; // Added Settings2 for Mode icon
+import { Menu, RefreshCw, List, Settings2, History as HistoryIconLucide } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 
-// JSON-LD Structured Data for WebApplication
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'SwapUnits - Free Online Unit Converter',
   description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, Bitcoin, Ethereum, EM Frequency, and Sound Frequency.',
   applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any', // Web-based
+  operatingSystem: 'Any',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://swapunits.com',
   featureList: [
-    'Unit Conversion',
-    'Length Conversion (m, ft, km, mi, in, cm, µm, nm)',
-    'Mass Conversion (kg, lb, g, oz, t, mg)',
-    'Temperature Conversion (°C, °F, K)',
-    'Time Conversion (s, min, hr, day, ms, µs, ns, ps, fs, yr)', 
-    'Pressure Conversion (Pa, kPa, bar, atm, psi)',
-    'Area Conversion (m², ft², km², mi², ha, acre, cm², mm²)',
-    'Volume Conversion (L, mL, m³, ft³, gal, qt, pt, cup, fl oz, tbsp, tsp, km³, cm³, mm³, in³)',
-    'Energy Conversion (J, kJ, cal, kcal, kWh, BTU, Wh, eV, ft⋅lb)',
-    'Speed Conversion (m/s, km/h, mph, kn, ft/s)',
-    'Fuel Economy Conversion (km/L, L/100km, MPG US, MPG UK)',
-    'Data Storage Conversion (B, KB, MB, GB, TB, PB, bit)',
-    'Data Transfer Rate Conversion (bps, Kbps, Mbps, Gbps, Tbps, B/s, KB/s, MB/s, GB/s, TB/s)',
-    'Bitcoin Conversion (BTC, sat)',
-    'Ethereum Conversion (ETH, gwei, wei)',
-    'EM Frequency & Wavelength Conversion (THz, GHz, MHz, kHz, Hz, mHz, km (λ), m (λ), cm (λ), mm (λ), µm (λ), nm (λ))',
-    'Sound Frequency & Wavelength Conversion (THz, GHz, MHz, kHz, Hz, mHz, km (λ), m (λ), cm (λ), mm (λ), µm (λ), nm (λ))',
-    'Metric Units',
-    'Imperial Units',
-    'Scientific Notation Option',
-    'Common Conversion Presets',
-    'Copy to Clipboard',
-    'Responsive Design',
-    'Basic and Advanced conversion modes',
+    'Unit Conversion', 'Length Conversion', 'Mass Conversion', 'Temperature Conversion', 'Time Conversion', 
+    'Pressure Conversion', 'Area Conversion', 'Volume Conversion', 'Energy Conversion', 'Speed Conversion', 
+    'Fuel Economy Conversion', 'Data Storage Conversion', 'Data Transfer Rate Conversion', 
+    'Bitcoin Conversion', 'Ethereum Conversion', 'EM Frequency & Wavelength Conversion', 
+    'Sound Frequency & Wavelength Conversion', 'Metric Units', 'Imperial Units', 'Scientific Notation Option',
+    'Common Conversion Presets', 'Copy to Clipboard', 'Responsive Design', 'Basic and Advanced modes',
+    'Conversion History'
   ],
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-  },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond, EM frequency, sound frequency, wavelength, THz, GHz, nm, Pa, yr",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, metric, imperial, scientific notation, presets, femtosecond, picosecond, nanosecond, microsecond, EM frequency, sound frequency, wavelength, THz, GHz, nm, Pa, yr, history",
 };
 
 
@@ -78,21 +59,45 @@ export default function Home() {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
-  const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic'); // State for converter mode
+  const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic');
+  const { history, addHistoryItem, clearHistory } = useConversionHistory();
 
-  // Get presets based on current converter mode
   const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
+
+  const handleResultCopied = React.useCallback((data: {
+    category: UnitCategory;
+    fromValue: number;
+    fromUnit: string;
+    toValue: number;
+    toUnit: string;
+  }) => {
+    addHistoryItem(data);
+  }, [addHistoryItem]);
+
+  const onHistoryItemSelect = React.useCallback((item: ConversionHistoryItem) => {
+    if (unitConverterRef.current) {
+      const fromUnitDetails = unitData[item.category]?.units.find(u => u.symbol === item.fromUnit);
+      const toUnitDetails = unitData[item.category]?.units.find(u => u.symbol === item.toUnit);
+      if ((fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') && converterMode === 'basic') {
+        setConverterMode('advanced');
+      }
+      setTimeout(() => {
+        if (unitConverterRef.current) {
+          unitConverterRef.current.applyHistorySelect(item);
+        }
+      }, 0);
+    }
+    if (isMobile) setIsSheetOpen(false);
+  }, [converterMode, isMobile, setConverterMode]);
 
 
   const onMobilePresetSelect = (preset: Preset) => {
     if (unitConverterRef.current) {
-      // Check if preset requires advanced mode and switch if necessary
       const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
       const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
       if ((fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') && converterMode === 'basic') {
         setConverterMode('advanced');
       }
-      // Delay preset selection slightly to allow mode switch to propagate if it happened
       setTimeout(() => {
         if (unitConverterRef.current) {
          unitConverterRef.current.handlePresetSelect(preset);
@@ -104,13 +109,11 @@ export default function Home() {
 
   const handlePresetSelectFromDesktop = (preset: Preset) => {
     if (unitConverterRef.current) {
-      // Check if preset requires advanced mode and switch if necessary
       const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
       const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
       if ((fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') && converterMode === 'basic') {
         setConverterMode('advanced');
       }
-       // Delay preset selection slightly to allow mode switch to propagate
       setTimeout(() => {
          if (unitConverterRef.current) {
             unitConverterRef.current.handlePresetSelect(preset);
@@ -121,7 +124,6 @@ export default function Home() {
 
   const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault(); 
-
     if (unitConverterRef.current) {
       const initialPreset: Preset = {
         category: 'Mass' as UnitCategory, 
@@ -129,15 +131,37 @@ export default function Home() {
         toUnit: 'g',
         name: 'InitialReset', 
       };
-      // Always reset to basic mode and apply initial preset when logo is clicked
       setConverterMode('basic'); 
-      // Use a microtask to ensure mode state update is processed before preset selection
       Promise.resolve().then(() => {
         if (unitConverterRef.current) {
           unitConverterRef.current.handlePresetSelect(initialPreset);
         }
       });
     }
+  };
+
+  const formatHistoryNumberMobile = (num: number): string => {
+    if (!isFinite(num)) return '-';
+    const absNum = Math.abs(num);
+    if (absNum > 1e4 || (absNum < 1e-3 && absNum !== 0)) { // Slightly different thresholds for mobile for brevity
+      let exp = num.toExponential(2).replace('e', 'E'); // Fewer decimal places for mobile
+      const match = exp.match(/^(-?\d(?:\.\d*)?)(0*)(E[+-]\d+)$/);
+      if (match) {
+          let coeff = match[1];
+          const exponent = match[3];
+          if (coeff.includes('.')) {
+              coeff = coeff.replace(/0+$/, '');
+              coeff = coeff.replace(/\.$/, '');
+          }
+          return coeff + exponent;
+      }
+      return exp;
+    }
+    const rounded = parseFloat(num.toFixed(3)); // Fewer decimal places for mobile
+    if (rounded % 1 === 0) {
+      return rounded.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+    return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3 });
   };
 
 
@@ -167,7 +191,6 @@ export default function Home() {
                     </SheetTitle>
                   </SheetHeader>
 
-                  {/* Mode Selection Section for Mobile Menu */}
                   <div className="p-4 border-b">
                     <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
                         <Settings2 className="h-4 w-4" aria-hidden="true" />
@@ -177,35 +200,23 @@ export default function Home() {
                        <SheetClose asChild>
                         <Button
                           variant={converterMode === 'basic' ? 'secondary' : 'outline'}
-                          onClick={() => {
-                            if (converterMode !== 'basic') {
-                              setConverterMode('basic');
-                            }
-                          }}
+                          onClick={() => { if (converterMode !== 'basic') setConverterMode('basic'); }}
                           aria-pressed={converterMode === 'basic'}
                           className="flex-1 px-5 text-sm rounded-r-none"
-                        >
-                          Basic
-                        </Button>
+                        > Basic </Button>
                       </SheetClose>
                       <SheetClose asChild>
                         <Button
                           variant={converterMode === 'advanced' ? 'secondary' : 'outline'}
-                          onClick={() => {
-                            if (converterMode !== 'advanced') {
-                              setConverterMode('advanced');
-                            }
-                          }}
+                          onClick={() => { if (converterMode !== 'advanced') setConverterMode('advanced'); }}
                           aria-pressed={converterMode === 'advanced'}
                           className="flex-1 px-5 text-sm rounded-l-none"
-                        >
-                          Advanced
-                        </Button>
+                        > Advanced </Button>
                       </SheetClose>
                     </div>
                   </div>
                   
-                  <div className="p-4">
+                  <div className="p-4 border-b">
                     <h3 className="text-md font-semibold text-foreground mb-3">Common Conversions</h3>
                     <ul className="space-y-2">
                       {displayPresets.map((preset, index) => (
@@ -224,6 +235,50 @@ export default function Home() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-md font-semibold text-foreground flex items-center gap-2">
+                          <HistoryIconLucide className="h-4 w-4" aria-hidden="true" />
+                          History
+                      </h3>
+                      {history.length > 0 && (
+                        <SheetClose asChild>
+                          <Button variant="outline" size="xs" onClick={clearHistory} aria-label="Clear history">
+                              Clear
+                          </Button>
+                        </SheetClose>
+                      )}
+                    </div>
+                    {history.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No history yet.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {history.slice(0, 5).map((item) => (
+                          <li key={item.id}>
+                            <SheetClose asChild>
+                              <Button
+                                  variant="ghost"
+                                  className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-start gap-2 text-sm"
+                                  onClick={() => onHistoryItemSelect(item)}
+                                  aria-label={`Apply conversion: ${formatHistoryNumberMobile(item.fromValue)} ${item.fromUnit} to ${formatHistoryNumberMobile(item.toValue)} ${item.toUnit}`}
+                              >
+                                  <UnitIcon category={item.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                                   <div className="flex-1 min-w-0">
+                                      <p className="font-medium truncate">
+                                          {formatHistoryNumberMobile(item.fromValue)} {item.fromUnit} → {formatHistoryNumberMobile(item.toValue)} {item.toUnit}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground truncate">
+                                          {item.category} - {format(new Date(item.timestamp), 'MMM d, p')}
+                                      </p>
+                                  </div>
+                              </Button>
+                            </SheetClose>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </ScrollArea>
               </SheetContent>
@@ -254,20 +309,25 @@ export default function Home() {
       <div className={cn(
         "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch",
         "pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20",
-        !isMobile && "md:grid-cols-[1fr_auto] md:gap-8" 
+        !isMobile && "md:grid-cols-[auto_1fr_auto] md:gap-8" 
       )}>
-        <main className="flex flex-col items-center w-full md:col-span-1" role="main">
+        {!isMobile && (
+          <aside className="hidden md:block max-w-[280px]" role="complementary">
+            <HistoryList items={history} onHistorySelect={onHistoryItemSelect} onClearHistory={clearHistory} className="h-full"/>
+          </aside>
+        )}
+        <main className="flex flex-col items-center w-full" role="main">
           <Toaster />
           <UnitConverter 
             ref={unitConverterRef} 
             className="h-full"
-            converterMode={converterMode} // Pass mode state
-            setConverterMode={setConverterMode} // Pass function to set mode
+            converterMode={converterMode}
+            setConverterMode={setConverterMode}
+            onResultCopied={handleResultCopied}
           />
         </main>
-
         {!isMobile && (
-          <aside className="hidden md:block md:col-span-1 max-w-[280px]" role="complementary">
+          <aside className="hidden md:block max-w-[280px]" role="complementary">
             <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
           </aside>
         )}
@@ -276,4 +336,3 @@ export default function Home() {
     </>
   );
 }
-
