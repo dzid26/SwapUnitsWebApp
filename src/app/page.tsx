@@ -234,27 +234,6 @@ export default function Home() {
                   </div>
                   
                   <div className="p-4 border-b">
-                    <h3 className="text-md font-semibold text-foreground mb-3">Common Conversions</h3>
-                    <ul className="space-y-2">
-                      {displayPresets.map((preset, index) => (
-                        <li key={`${preset.category}-${preset.name}-${index}`}>
-                           <SheetClose asChild>
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm"
-                                onClick={() => onMobilePresetSelect(preset)}
-                                aria-label={`Select preset: ${preset.name}`}
-                            >
-                                <UnitIcon category={preset.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                <span className="flex-1">{preset.name}</span>
-                            </Button>
-                           </SheetClose>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="p-4">
                     <div className="flex justify-between items-center mb-3">
                       <h3 className="text-md font-semibold text-foreground flex items-center gap-2">
                           <HistoryIconLucide className="h-4 w-4" aria-hidden="true" />
@@ -296,6 +275,27 @@ export default function Home() {
                         ))}
                       </ul>
                     )}
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="text-md font-semibold text-foreground mb-3">Common Conversions</h3>
+                    <ul className="space-y-2">
+                      {displayPresets.map((preset, index) => (
+                        <li key={`${preset.category}-${preset.name}-${index}`}>
+                           <SheetClose asChild>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm"
+                                onClick={() => onMobilePresetSelect(preset)}
+                                aria-label={`Select preset: ${preset.name}`}
+                            >
+                                <UnitIcon category={preset.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                <span className="flex-1">{preset.name}</span>
+                            </Button>
+                           </SheetClose>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </ScrollArea>
               </SheetContent>
