@@ -236,6 +236,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 case 'Data Storage': newFromUnitSymbol = 'GB'; newToUnitSymbol = 'MB'; break;
                 case 'Data Transfer Rate': newFromUnitSymbol = 'Mbps'; newToUnitSymbol = 'MB/s'; break;
                 case 'Bitcoin': newFromUnitSymbol = 'BTC'; newToUnitSymbol = 'sat'; break;
+                 case 'EM Frequency': newFromUnitSymbol = 'Hz'; newToUnitSymbol = 'km (λ)'; break;
+                 case 'Sound Frequency': newFromUnitSymbol = 'Hz'; newToUnitSymbol = 'cm (λ)'; break;
                 default:
                     newFromUnitSymbol = availableUnits[0]?.symbol || "";
                     newToUnitSymbol = availableUnits.find(u => u.symbol !== newFromUnitSymbol)?.symbol || newFromUnitSymbol;
@@ -340,50 +342,50 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   const internalHandlePresetSelect = React.useCallback((preset: Preset) => {
     const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
     if (!presetCategory) return;
-
-    const currentValueOfInput = getValues().value;
-
+  
+    // Do not change the 'value' field when a preset is selected
+    // const currentValueOfInput = getValues().value;
+  
     setValue("category", presetCategory, { shouldValidate: true, shouldDirty: true });
-
+  
+    // Use a microtask to ensure category change is processed before unit changes
     Promise.resolve().then(() => {
-        const availableUnits = getUnitsForCategoryAndMode(presetCategory);
+      const availableUnits = getUnitsForCategoryAndMode(presetCategory);
+  
+      const fromUnitValid = availableUnits.some(u => u.symbol === preset.fromUnit);
+      const toUnitValid = availableUnits.some(u => u.symbol === preset.toUnit);
+  
+      const finalFromUnit = fromUnitValid ? preset.fromUnit : availableUnits[0]?.symbol || "";
+      let finalToUnit = (toUnitValid && preset.toUnit !== finalFromUnit) ? preset.toUnit : (availableUnits.find(u => u.symbol !== finalFromUnit)?.symbol || finalFromUnit);
+      
+      if (finalFromUnit === finalToUnit && availableUnits.length > 1) {
+        finalToUnit = availableUnits.find(u => u.symbol !== finalFromUnit)?.symbol || availableUnits[0]?.symbol || "";
+      }
+  
+      setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
+      setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
+  
+      // // Preserve the user's current input value
+      // if (currentValueOfInput !== undefined && String(currentValueOfInput).trim() !== '' && !isNaN(Number(currentValueOfInput))) {
+      //   setValue("value", Number(currentValueOfInput), { shouldValidate: true, shouldDirty: true });
+      // } else {
+      //   // If input was empty or invalid, set to 1 (or RHF default if preferred)
+      //   setValue("value", 1, { shouldValidate: true, shouldDirty: true });
+      // }
+      
+      setNumberFormat('normal');
+      setIsNormalFormatDisabled(false);
+  
+      // Trigger conversion immediately with the current form values (which now include the preset's units)
+      Promise.resolve().then(() => {
+        const currentVals = getValues(); // Get the most up-to-date form values
+        const valToConvert = (typeof currentVals.value === 'string' && (isNaN(parseFloat(currentVals.value)) || currentVals.value.trim() === '')) || currentVals.value === undefined ? lastValidInputValue : Number(currentVals.value);
 
-        const fromUnitValid = availableUnits.some(u => u.symbol === preset.fromUnit);
-        const toUnitValid = availableUnits.some(u => u.symbol === preset.toUnit);
-
-        const finalFromUnit = fromUnitValid ? preset.fromUnit : availableUnits[0]?.symbol || "";
-        let finalToUnit = (toUnitValid && preset.toUnit !== finalFromUnit) ? preset.toUnit : (availableUnits.find(u => u.symbol !== finalFromUnit)?.symbol || finalFromUnit);
-         if (finalFromUnit === finalToUnit && availableUnits.length > 1) {
-             finalToUnit = availableUnits.find(u=> u.symbol !== finalFromUnit)?.symbol || availableUnits[0]?.symbol || "";
-         }
-
-        setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
-        setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
-        
-        // Preserve the user's current input value instead of resetting to 1
-        if (currentValueOfInput !== undefined) {
-            setValue("value", currentValueOfInput, { shouldValidate: true, shouldDirty: true });
-        } else {
-            // If currentValueOfInput was undefined (e.g. form just initialized and not touched),
-            // ensure a default is set, or let RHF default handle it.
-            // For consistency, if it was truly undefined, perhaps set to 1 or rely on RHF's default.
-            // Here, we set to 1 if it was undefined to ensure the field is not left in an invalid state by the preset.
-            setValue("value", 1, { shouldValidate: true, shouldDirty: true });
-        }
-        // Do NOT call setLastValidInputValue(1) here.
-        // The main useEffect watching rhfValue will handle lastValidInputValue.
-
-        setNumberFormat('normal');
-        setIsNormalFormatDisabled(false);
-
-        // Trigger conversion immediately
-        Promise.resolve().then(() => {
-           const result = convertUnits(getValues());
-           setConversionResult(result);
-        });
+        const result = convertUnits({ ...currentVals, value: valToConvert });
+        setConversionResult(result);
+      });
     });
-
-  }, [setValue, getValues, convertUnits]);
+  }, [setValue, getValues, convertUnits, lastValidInputValue]);
 
 
   const internalApplyHistorySelect = React.useCallback((item: ConversionHistoryItem) => {
@@ -526,7 +528,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                       name="fromUnit"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel htmlFor="from-unit-select">From Unit</FormLabel>
+                          {/* <FormLabel htmlFor="from-unit-select">From Unit</FormLabel> */}
                           <Select
                             onValueChange={(value) => field.onChange(value)}
                             value={field.value}
@@ -566,7 +568,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                       name="toUnit"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel htmlFor="to-unit-select">To Unit</FormLabel>
+                          {/* <FormLabel htmlFor="to-unit-select">To Unit</FormLabel> */}
                           <Select
                             onValueChange={(value) => field.onChange(value)}
                             value={field.value}
@@ -614,7 +616,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                            value={(field.value === '' || field.value === '-') ? field.value : (isNaN(Number(field.value)) ? '' : String(field.value))}
                           disabled={!rhfFromUnit || !rhfToUnit}
                           aria-required="true"
-                          className="border-primary"
+                          className="border-primary text-left" 
                         />
                       </FormControl>
                       <FormDescription>Enter the numerical value you wish to convert.</FormDescription>
@@ -674,3 +676,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
