@@ -16,7 +16,7 @@ import { HistoryList } from "@/components/history-list";
 import AdPlaceholder from "@/components/ad-placeholder"; 
 import { UnitIcon } from '@/components/unit-icon'; 
 import { unitData, getFilteredAndSortedPresets, getUnitsForCategoryAndMode } from '@/lib/unit-data'; 
-import type { Preset, UnitCategory, ConversionHistoryItem } from '@/types'; // Removed ConverterMode
+import type { Preset, UnitCategory, ConversionHistoryItem } from '@/types';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversionHistory } from '@/hooks/use-conversion-history';
@@ -31,7 +31,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, /*Settings2,*/ History as HistoryIconLucide, Copy } from 'lucide-react'; // Removed Settings2
+import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 
@@ -39,7 +39,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'SwapUnits - Free Online Unit Converter',
-  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, Bitcoin.', // Removed Ethereum, EM Frequency, and Sound Frequency
+  description: 'A free online tool to convert between various units of measurement including length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer rate, Bitcoin.',
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://swapunits.com',
@@ -47,14 +47,13 @@ const jsonLd = {
     'Unit Conversion', 'Length Conversion', 'Mass Conversion', 'Temperature Conversion', 'Time Conversion', 
     'Pressure Conversion', 'Area Conversion', 'Volume Conversion', 'Energy Conversion', 'Speed Conversion', 
     'Fuel Economy Conversion', 'Data Storage Conversion', 'Data Transfer Rate Conversion', 
-    'Bitcoin Conversion', // Removed Ethereum, EM Frequency, Sound Frequency
+    'Bitcoin Conversion', 
     'Metric Units', 'Imperial Units', 'Scientific Notation Option',
     'Common Conversion Presets', 'Copy to Clipboard', 'Responsive Design', 
-    // Removed 'Basic and Advanced modes'
     'Conversion History'
   ],
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, metric, imperial, scientific notation, presets, yr, history", // Removed advanced-only keywords
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, metric, imperial, scientific notation, presets, yr, history, atm, Pa, psi", 
 };
 
 
@@ -63,10 +62,8 @@ export default function Home() {
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
-  // const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic'); // Removed
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
 
-  // Simplified: no converterMode dependency
   const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
 
   const handleResultCopied = React.useCallback((data: {
@@ -81,85 +78,28 @@ export default function Home() {
 
   const onHistoryItemSelect = React.useCallback((item: ConversionHistoryItem) => {
     if (unitConverterRef.current) {
-      // Removed mode switching logic
-      // const fromUnitDetails = getUnitsForCategoryAndMode(item.category, 'advanced').find(u => u.symbol === item.fromUnit);
-      // const toUnitDetails = getUnitsForCategoryAndMode(item.category, 'advanced').find(u => u.symbol === item.toUnit);
-      
-      // let targetMode = converterMode;
-      // if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
-      //   targetMode = 'advanced';
-      // } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
-      //   const allUnitsInCat = getUnitsForCategoryAndMode(item.category, 'advanced');
-      //   const isFromUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.fromUnit)?.mode === 'basic';
-      //   const isToUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.toUnit)?.mode === 'basic';
-
-      //   if(isFromUnitStrictlyBasic && isToUnitStrictlyBasic){
-      //       targetMode = 'basic';
-      //   }
-      // }
-
-      // if (targetMode !== converterMode) {
-      //   setConverterMode(targetMode);
-      // }
-      
-      // setTimeout(() => { // setTimeout might still be useful for other reasons, but mode change is gone
       if (unitConverterRef.current) {
         unitConverterRef.current.applyHistorySelect(item);
       }
-      // }, 0); 
     }
     if (isMobile) setIsSheetOpen(false);
-  }, [isMobile /*, converterMode, setConverterMode*/]); // Removed converterMode, setConverterMode
+  }, [isMobile]);
 
 
   const onMobilePresetSelect = (preset: Preset) => {
     if (unitConverterRef.current) {
-      // Removed mode switching logic
-      // const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
-      // const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
-      
-      // let targetMode = converterMode;
-      // if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
-      //     targetMode = 'advanced';
-      // } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
-      //     targetMode = 'basic';
-      // }
-      
-      // if (targetMode !== converterMode) {
-      //   setConverterMode(targetMode);
-      // }
-
-      // setTimeout(() => {
       if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
       }
-      // },0);
     }
     setIsSheetOpen(false); 
   };
 
   const handlePresetSelectFromDesktop = (preset: Preset) => {
     if (unitConverterRef.current) {
-      // Removed mode switching logic
-      // const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
-      // const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
-
-      // let targetMode = converterMode;
-      //  if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
-      //     targetMode = 'advanced';
-      // } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
-      //     targetMode = 'basic';
-      // }
-
-      // if (targetMode !== converterMode) {
-      //   setConverterMode(targetMode);
-      // }
-      
-      // setTimeout(() => {
       if (unitConverterRef.current) {
           unitConverterRef.current.handlePresetSelect(preset);
       }
-      // }, 0);
     }
   };
 
@@ -172,7 +112,6 @@ export default function Home() {
         toUnit: 'g',
         name: 'InitialReset', 
       };
-      // setConverterMode('basic'); // Removed
       Promise.resolve().then(() => {
         if (unitConverterRef.current) {
           unitConverterRef.current.handlePresetSelect(initialPreset);
@@ -253,9 +192,6 @@ export default function Home() {
                       Menu
                     </SheetTitle>
                   </SheetHeader>
-
-                  {/* Removed Mode Section */}
-                  {/* <div className="p-4 border-b"> ... </div> */}
                   
                   <div className="p-4 border-b">
                     <div className="flex justify-between items-center mb-3">
@@ -386,8 +322,6 @@ export default function Home() {
           <UnitConverter 
             ref={unitConverterRef} 
             className="h-full" 
-            // converterMode={converterMode} // Removed
-            // setConverterMode={setConverterMode} // Removed
             onResultCopied={handleResultCopied}
           />
         </main>
