@@ -33,38 +33,9 @@ export const PresetList = React.memo(function PresetListComponent({
     const displayPresets = getFilteredAndSortedPresets(); 
 
     return (
-        <Card className={cn("shadow-lg hidden md:flex md:flex-col w-full max-w-xs", className)} aria-label="Common and Favorite Unit Conversions">
-            {/* Common Conversions Section */}
-            <CardHeader className="p-4 flex-shrink-0">
-                <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
-                    <List className="h-5 w-5" aria-hidden="true" />
-                    Common Conversions
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 flex-grow overflow-hidden"> {/* flex-grow will make this content area expand */}
-                <ScrollArea className="h-full pr-1"> {/* h-full makes ScrollArea fill its CardContent parent */}
-                    <ul className="space-y-2">
-                        {displayPresets.map((preset, index) => (
-                            <li key={`${preset.category}-${preset.name}-${index}`}>
-                              <Button
-                                  variant="ghost"
-                                  className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm" 
-                                  onClick={() => onPresetSelect(preset)} 
-                                  aria-label={`Select preset: ${preset.name}`}
-                              >
-                                  <UnitIcon category={preset.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                  <span className="flex-1">{preset.name}</span>
-                              </Button>
-                            </li>
-                        ))}
-                    </ul>
-                </ScrollArea>
-            </CardContent>
-
-            <Separator className="my-0 mx-4 flex-shrink-0" /> 
-
+        <Card className={cn("shadow-lg hidden md:flex md:flex-col w-full max-w-xs", className)} aria-label="Favorite and Common Unit Conversions">
             {/* My Favorites Section */}
-            <CardHeader className="p-4 pt-2 flex-shrink-0">
+            <CardHeader className="p-4 pb-2 flex-shrink-0"> {/* Adjusted padding */}
                  <div className="flex justify-between items-center">
                     <CardTitle className="text-xl font-semibold text-accent flex items-center gap-2">
                         <Star className="h-5 w-5" aria-hidden="true" />
@@ -77,7 +48,7 @@ export const PresetList = React.memo(function PresetListComponent({
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0 flex-grow overflow-hidden"> {/* flex-grow will make this content area expand */}
+            <CardContent className="p-4 pt-2 flex-grow overflow-hidden"> {/* Adjusted padding */}
                 {isLoadingFavorites ? (
                      <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
                         <p className="text-sm text-muted-foreground">Loading favorites...</p>
@@ -101,7 +72,7 @@ export const PresetList = React.memo(function PresetListComponent({
                                       <UnitIcon category={fav.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
                                        <div className="flex-1 min-w-0"> 
                                           <p className="font-medium break-words">{fav.name}</p>
-                                          <p className="text-xs text-muted-foreground break-words">{fav.category}</p>
+                                          {/* Removed category display: <p className="text-xs text-muted-foreground break-words">{fav.category}</p> */}
                                       </div>
                                   </Button>
                                   <Button
@@ -121,6 +92,35 @@ export const PresetList = React.memo(function PresetListComponent({
                         </ul>
                     </ScrollArea>
                 )}
+            </CardContent>
+
+            <Separator className="my-0 mx-4 flex-shrink-0" /> 
+
+            {/* Common Conversions Section */}
+            <CardHeader className="p-4 pb-2 flex-shrink-0"> {/* Adjusted padding */}
+                <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
+                    <List className="h-5 w-5" aria-hidden="true" />
+                    Common Conversions
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-2 flex-grow overflow-hidden"> {/* Adjusted padding, flex-grow will make this content area expand */}
+                <ScrollArea className="h-full pr-1"> {/* h-full makes ScrollArea fill its CardContent parent */}
+                    <ul className="space-y-2">
+                        {displayPresets.map((preset, index) => (
+                            <li key={`${preset.category}-${preset.name}-${index}`}>
+                              <Button
+                                  variant="ghost"
+                                  className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm" 
+                                  onClick={() => onPresetSelect(preset)} 
+                                  aria-label={`Select preset: ${preset.name}`}
+                              >
+                                  <UnitIcon category={preset.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                  <span className="flex-1">{preset.name}</span>
+                              </Button>
+                            </li>
+                        ))}
+                    </ul>
+                </ScrollArea>
             </CardContent>
         </Card>
     );
