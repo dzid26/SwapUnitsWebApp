@@ -440,10 +440,10 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
           </div>
 
           <br className={cn(isMobile && "hidden")} />
-           <p className={cn("text-sm text-muted-foreground mb-2 space-y-1", isMobile && "hidden")}>
+           <p className="text-sm text-muted-foreground mb-2 space-y-1">
              Quickly convert between units.
            </p>
-           <ol className={cn("text-sm text-muted-foreground list-decimal list-inside space-y-1", isMobile && "hidden")}>
+           <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
              <li><span className="font-semibold text-primary">Select Category:</span> Choose the type of measurement (e.g., Length, Mass).</li>
              <li><span className="font-semibold text-primary">Choose Units & Input Value:</span> Pick the 'From' and 'To' units, then enter the value you want to convert.</li>
              <li><span className="font-semibold text-primary">View Result:</span> The converted value appears automatically below.</li>
