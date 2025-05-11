@@ -13,13 +13,14 @@ import { Toaster } from '@/components/ui/toaster';
 import { Footer } from "@/components/footer";
 import { PresetList } from "@/components/preset-list"; 
 import { HistoryList } from "@/components/history-list";
-import AdPlaceholder from "@/components/ad-placeholder"; // Changed to default import
+import AdPlaceholder from "@/components/ad-placeholder"; 
 import { UnitIcon } from '@/components/unit-icon'; 
 import { unitData, getFilteredAndSortedPresets, getUnitsForCategoryAndMode } from '@/lib/unit-data'; 
 import type { Preset, ConverterMode, UnitCategory, ConversionHistoryItem } from '@/types'; 
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversionHistory } from '@/hooks/use-conversion-history';
+import { useToast } from '@/hooks/use-toast'; // Added useToast
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -30,7 +31,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, Settings2, History as HistoryIconLucide } from 'lucide-react';
+import { Menu, RefreshCw, List, Settings2, History as HistoryIconLucide, Copy } from 'lucide-react'; // Added Copy
 import { cn } from '@/lib/utils';
 
 
@@ -58,6 +59,7 @@ const jsonLd = {
 
 export default function Home() {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic');
@@ -84,8 +86,6 @@ export default function Home() {
       if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
         targetMode = 'advanced';
       } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
-        // If both units are basic, and current mode is advanced, consider switching to basic,
-        // or let user decide. For now, we'll switch if both are strictly basic.
         const allUnitsInCat = getUnitsForCategoryAndMode(item.category, 'advanced');
         const isFromUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.fromUnit)?.mode === 'basic';
         const isToUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.toUnit)?.mode === 'basic';
@@ -102,7 +102,7 @@ export default function Home() {
         if (unitConverterRef.current) {
           unitConverterRef.current.applyHistorySelect(item);
         }
-      }, 0); // Ensure mode switch is processed before applying history
+      }, 0); 
     }
     if (isMobile) setIsSheetOpen(false);
   }, [converterMode, isMobile, setConverterMode]);
@@ -181,6 +181,28 @@ export default function Home() {
     return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3 });
   };
 
+  const handleCopyHistoryItemMobile = React.useCallback(async (item: ConversionHistoryItem) => {
+    const textToCopy = `${formatHistoryNumberMobile(item.fromValue)} ${item.fromUnit} → ${formatHistoryNumberMobile(item.toValue)} ${item.toUnit}`;
+    if (!textToCopy || !navigator.clipboard) return;
+
+    try {
+        await navigator.clipboard.writeText(textToCopy);
+        toast({
+            title: "Copied!",
+            description: `Conversion "${textToCopy}" copied to clipboard.`,
+            variant: "confirmation",
+            duration: 1500,
+        });
+    } catch (err) {
+        console.error('Failed to copy history item: ', err);
+        toast({
+            title: "Copy Failed",
+            description: "Could not copy conversion to clipboard.",
+            variant: "destructive",
+        });
+    }
+  }, [toast]);
+
 
   return (
     <>
@@ -241,7 +263,7 @@ export default function Home() {
                       </h3>
                       {history.length > 0 && (
                         <SheetClose asChild>
-                          <Button variant="outline" size="xs" onClick={clearHistory} aria-label="Clear history">
+                          <Button variant="outline" size="xs" onClick={clearHistory} aria-label="Clear history" className="px-3 py-1.5"> {/* Increased padding */}
                               Clear
                           </Button>
                         </SheetClose>
@@ -250,27 +272,39 @@ export default function Home() {
                     {history.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No history yet.</p>
                     ) : (
-                      <ul className="space-y-2">
-                        {history.slice(0, 5).map((item) => ( // Show only top 5 for brevity in sheet
-                          <li key={item.id}>
-                            <SheetClose asChild>
+                      <ul className="space-y-1"> {/* Adjusted space-y */}
+                        {history.slice(0, 5).map((item) => ( 
+                          <li key={item.id} className="flex items-center justify-between gap-1 group/history-item-mobile">
+                             <SheetClose asChild>
                               <Button
                                   variant="ghost"
-                                  className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-start gap-2 text-sm"
+                                  className="flex-grow justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-start gap-2 text-sm"
                                   onClick={() => onHistoryItemSelect(item)}
                                   aria-label={`Apply conversion: ${formatHistoryNumberMobile(item.fromValue)} ${item.fromUnit} to ${formatHistoryNumberMobile(item.toValue)} ${item.toUnit}`}
                               >
                                   <UnitIcon category={item.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
                                    <div className="flex-1 min-w-0">
-                                      <p className="font-medium truncate">
+                                      <p className="font-medium break-words"> {/* Ensure text wrapping */}
                                           {formatHistoryNumberMobile(item.fromValue)} {item.fromUnit} → {formatHistoryNumberMobile(item.toValue)} {item.toUnit}
                                       </p>
-                                      <p className="text-xs text-muted-foreground truncate">
+                                      <p className="text-xs text-muted-foreground break-words"> {/* Ensure text wrapping */}
                                           {item.category} - {format(new Date(item.timestamp), 'MMM d, p')}
                                       </p>
                                   </div>
                               </Button>
                             </SheetClose>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground opacity-0 group-hover/history-item-mobile:opacity-100 focus:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    handleCopyHistoryItemMobile(item);
+                                }}
+                                aria-label="Copy this history item to clipboard"
+                            >
+                                <Copy className="h-4 w-4" />
+                            </Button>
                           </li>
                         ))}
                       </ul>
@@ -330,7 +364,6 @@ export default function Home() {
       )}>
         {!isMobile && (
           <aside className="hidden md:block max-w-[280px]" role="complementary">
-             {/* Ensure HistoryList takes full available height of its grid cell */}
             <HistoryList items={history} onHistorySelect={onHistoryItemSelect} onClearHistory={clearHistory} className="h-full"/>
           </aside>
         )}
@@ -338,7 +371,7 @@ export default function Home() {
           <Toaster />
           <UnitConverter 
             ref={unitConverterRef} 
-            className="h-full" // Make UnitConverter take full height
+            className="h-full" 
             converterMode={converterMode}
             setConverterMode={setConverterMode}
             onResultCopied={handleResultCopied}
@@ -346,7 +379,6 @@ export default function Home() {
         </main>
         {!isMobile && (
           <aside className="hidden md:block max-w-[280px]" role="complementary">
-             {/* Ensure PresetList takes full available height of its grid cell */}
             <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
           </aside>
         )}
