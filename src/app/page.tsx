@@ -315,7 +315,7 @@ export default function Home() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground opacity-0 group-hover/history-item-mobile:opacity-100 focus:opacity-100 transition-opacity"
+                                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground opacity-100 transition-opacity"
                                 onClick={(e) => {
                                     e.stopPropagation(); 
                                     handleCopyHistoryItemMobile(item);
