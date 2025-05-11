@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getFilteredAndSortedPresets } from "@/lib/unit-data"; 
 import type { Preset, FavoriteItem } from '@/types'; 
-import { List, Star, X, History } from 'lucide-react'; // Added Star and X icons
+import { List, Star, X } from 'lucide-react'; // Added Star and X icons
 import { UnitIcon } from './unit-icon';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator'; // Import Separator
+import { Progress } from '@/components/ui/progress';
 
 interface PresetListProps {
     onPresetSelect: (preset: Preset) => void;
@@ -40,8 +41,8 @@ export const PresetList = React.memo(function PresetListComponent({
                     Common Conversions
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-0 flex-grow overflow-hidden">
-                <ScrollArea className="h-[calc(50%-1rem)] pr-1"> {/* Adjust height as needed */}
+            <CardContent className="p-4 pt-0 flex-grow overflow-hidden"> {/* flex-grow will make this content area expand */}
+                <ScrollArea className="h-full pr-1"> {/* h-full makes ScrollArea fill its CardContent parent */}
                     <ul className="space-y-2">
                         {displayPresets.map((preset, index) => (
                             <li key={`${preset.category}-${preset.name}-${index}`}>
@@ -76,17 +77,18 @@ export const PresetList = React.memo(function PresetListComponent({
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0 flex-grow overflow-hidden">
+            <CardContent className="p-4 pt-0 flex-grow overflow-hidden"> {/* flex-grow will make this content area expand */}
                 {isLoadingFavorites ? (
-                     <p className="text-sm text-muted-foreground h-full flex items-center justify-center">
-                        Loading favorites...
-                    </p>
+                     <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
+                        <p className="text-sm text-muted-foreground">Loading favorites...</p>
+                        <Progress value={50} className="w-full" aria-label="Loading progress" />
+                    </div>
                 ): favorites.length === 0 ? (
                     <p className="text-sm text-muted-foreground h-full flex items-center justify-center">
                         Saved favorites will appear here.
                     </p>
                 ) : (
-                    <ScrollArea className="h-[calc(50%-1rem)] pr-1"> {/* Adjust height as needed */}
+                    <ScrollArea className="h-full pr-1"> {/* h-full makes ScrollArea fill its CardContent parent */}
                         <ul className="space-y-1">
                             {favorites.map((fav) => (
                                 <li key={fav.id} className="flex items-center justify-between gap-1 group/fav-item">
