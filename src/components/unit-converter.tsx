@@ -28,7 +28,6 @@ import type { UnitCategory, Unit, ConversionResult, Preset, NumberFormat, Conver
 import {
   ArrowRightLeft,
   FlaskConical,
-  Star, // Added Star icon
 } from 'lucide-react';
 
 import { UnitIcon } from './unit-icon';
@@ -39,7 +38,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useImperativeHandle, forwardRef } from 'react';
 import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 
 const formSchema = z.object({
@@ -64,16 +62,16 @@ interface UnitConverterProps {
     toValue: number;
     toUnit: string;
   }) => void;
-  onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; // Added prop
+  onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; 
 }
 
 export interface UnitConverterHandle {
-  handlePresetSelect: (preset: Preset | FavoriteItem) => void; // Modified to accept FavoriteItem as well
+  handlePresetSelect: (preset: Preset | FavoriteItem) => void; 
   applyHistorySelect: (item: ConversionHistoryItem) => void;
 }
 
 
-export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied, onSaveFavorite }, ref) {
+export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied, onSaveFavorite: onSaveFavoriteProp }, ref) {
   const [selectedCategoryLocal, setSelectedCategoryLocal] = React.useState<UnitCategory | "">("");
   const [conversionResult, setConversionResult] = React.useState<ConversionResult | null>(null);
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1);
@@ -81,7 +79,6 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   const [isNormalFormatDisabled, setIsNormalFormatDisabled] = React.useState<boolean>(false);
   const isMobile = useIsMobile();
   const [isSwapped, setIsSwapped] = React.useState(false);
-  const { toast } = useToast();
 
 
   const form = useForm<FormData>({
@@ -96,7 +93,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   });
 
   const { watch, setValue, reset, getValues } = form;
-  const rhfCategory = watch("category") as UnitCategory;
+  const rhfCategory = watch("category") as UnitCategory | ""; // Ensure rhfCategory can be ""
   const rhfFromUnit = watch("fromUnit");
   const rhfToUnit = watch("toUnit");
   const rhfValue = watch("value");
@@ -160,14 +157,14 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
     } else if (currentCategory === "Fuel Economy") {
         let valueInKmPerL: number;
         if (fromUnitData.symbol === 'L/100km') {
-            if (numericValue === 0) return null;
+            if (numericValue === 0) return { value: Infinity, unit: toUnitData.symbol }; // Avoid division by zero, treat as very high consumption
             valueInKmPerL = fromUnitData.factor / numericValue;
         } else {
             valueInKmPerL = numericValue * fromUnitData.factor;
         }
 
         if (toUnitData.symbol === 'L/100km') {
-            if (valueInKmPerL === 0) return null;
+            if (valueInKmPerL === 0) return { value: Infinity, unit: toUnitData.symbol }; // Avoid division by zero
             resultValue = toUnitData.factor / valueInKmPerL;
         } else {
             resultValue = valueInKmPerL / toUnitData.factor;
@@ -181,10 +178,12 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 
  React.useEffect(() => {
-    let categoryToProcess = rhfCategory;
+    const categoryToProcess = rhfCategory as UnitCategory; // Treat as UnitCategory for processing
+    if (!categoryToProcess) return; // Do nothing if category is empty string
+
     const categoryChangedSystemOrUser = categoryToProcess !== selectedCategoryLocal;
 
-    if (categoryChangedSystemOrUser && categoryToProcess) {
+    if (categoryChangedSystemOrUser) {
         setSelectedCategoryLocal(categoryToProcess);
 
         const availableUnits = getUnitsForCategoryAndMode(categoryToProcess);
@@ -250,15 +249,15 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
             const currentVals = getValues();
             const valToConvert = (typeof currentVals.value === 'string' && (isNaN(parseFloat(currentVals.value)) || currentVals.value.trim() === '')) || currentVals.value === undefined ? 1 : Number(currentVals.value);
 
-            const result = convertUnits({ ...currentVals, value: valToConvert });
+            const result = convertUnits({ ...currentVals, value: valToConvert, category: categoryToProcess });
             setConversionResult(result);
         });
     }
- }, [rhfCategory, setValue, getValues, convertUnits, selectedCategoryLocal, rhfFromUnit, rhfToUnit, categoriesForDropdown]);
+ }, [rhfCategory, setValue, getValues, convertUnits, selectedCategoryLocal, rhfFromUnit, rhfToUnit]);
 
 
   React.useEffect(() => {
-    if (rhfCategory === selectedCategoryLocal) {
+    if (rhfCategory === selectedCategoryLocal && rhfCategory !== "") { // Ensure category is not empty
         const formData = getValues();
         const { category, fromUnit, toUnit, value } = formData;
         const numericValue = Number(value);
@@ -343,8 +342,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
       setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
       setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
-
-      // Preserve the existing value if it's a valid number for presets/favorites
+      
       if (valueToKeep !== undefined && String(valueToKeep).trim() !== '' && !isNaN(Number(valueToKeep))) {
          setValue("value", Number(valueToKeep), { shouldValidate: true, shouldDirty: true });
          setLastValidInputValue(Number(valueToKeep));
@@ -354,13 +352,12 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
          setLastValidInputValue(valToUse);
       }
 
-
       setNumberFormat('normal');
       setIsNormalFormatDisabled(false);
 
       Promise.resolve().then(() => {
         const updatedVals = getValues();
-        const result = convertUnits(updatedVals);
+        const result = convertUnits({...updatedVals, category: presetCategory});
         setConversionResult(result);
       });
     });
@@ -404,7 +401,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         }
 
         Promise.resolve().then(() => {
-           const newResult = convertUnits(getValues());
+           const newResult = convertUnits({...getValues(), category });
            setConversionResult(newResult);
         });
     });
@@ -426,37 +423,6 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  };
-
-  const handleSaveToFavorites = () => {
-    if (!rhfCategory || !rhfFromUnit || !rhfToUnit) {
-      toast({
-        title: "Cannot Save Favorite",
-        description: "Please select a category and both units before saving.",
-        variant: "destructive",
-        duration: 2000,
-      });
-      return;
-    }
-
-    if (onSaveFavorite) {
-      const fromUnitName = getUnitsForCategoryAndMode(rhfCategory).find(u => u.symbol === rhfFromUnit)?.name || rhfFromUnit;
-      const toUnitName = getUnitsForCategoryAndMode(rhfCategory).find(u => u.symbol === rhfToUnit)?.name || rhfToUnit;
-      const favoriteName = `${fromUnitName} to ${toUnitName}`;
-      
-      onSaveFavorite({
-        category: rhfCategory,
-        fromUnit: rhfFromUnit,
-        toUnit: rhfToUnit,
-        name: favoriteName,
-      });
-      toast({
-        title: "Favorite Saved!",
-        description: `"${favoriteName}" added to your favorites.`,
-        variant: "success",
-        duration: 2000,
-      });
-    }
   };
 
 
@@ -634,32 +600,18 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     </FormItem>
                   )}
                 />
-                <div className="flex items-center gap-2">
                   <ConversionDisplay
                     fromValue={lastValidInputValue}
                     fromUnit={rhfFromUnit ?? ''}
+                    toUnit={rhfToUnit ?? ''}
                     result={conversionResult}
                     format={numberFormat}
                     onActualFormatChange={handleActualFormatChange}
                     category={rhfCategory}
                     onResultCopied={onResultCopied}
+                    onSaveFavorite={onSaveFavoriteProp}
                   />
-                  {onSaveFavorite && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={handleSaveToFavorites}
-                      className="h-10 w-10 shrink-0 hover:bg-accent hover:text-accent-foreground"
-                      aria-label="Save conversion to favorites"
-                      disabled={!rhfCategory || !rhfFromUnit || !rhfToUnit}
-                    >
-                      <Star className="h-5 w-5" />
-                    </Button>
-                  )}
-                </div>
                  
-
                   <fieldset className="pt-4">
                     <legend className="mb-2 block font-medium text-sm">Result Formatting</legend>
                      <RadioGroup
@@ -702,3 +654,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+

@@ -19,7 +19,7 @@ import type { Preset, UnitCategory, ConversionHistoryItem, FavoriteItem } from '
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversionHistory } from '@/hooks/use-conversion-history';
-import { useFavorites } from '@/hooks/use-favorites'; // Import useFavorites hook
+import { useFavorites } from '@/hooks/use-favorites'; 
 import { useToast } from '@/hooks/use-toast'; 
 import { Button } from '@/components/ui/button';
 import {
@@ -64,7 +64,7 @@ export default function Home() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
-  const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); // Use favorites hook
+  const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); 
 
 
   const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
@@ -89,14 +89,14 @@ export default function Home() {
   }, [isMobile]);
 
 
-  const onMobilePresetSelect = (preset: Preset | FavoriteItem) => { // Can be Preset or FavoriteItem
+  const onMobilePresetSelect = (preset: Preset | FavoriteItem) => { 
     if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
     }
     setIsSheetOpen(false); 
   };
 
-  const handlePresetSelectFromDesktop = (preset: Preset | FavoriteItem) => { // Can be Preset or FavoriteItem
+  const handlePresetSelectFromDesktop = (preset: Preset | FavoriteItem) => { 
     if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
     }
@@ -392,7 +392,7 @@ export default function Home() {
             ref={unitConverterRef} 
             className="h-full" 
             onResultCopied={handleResultCopied}
-            onSaveFavorite={handleSaveFavorite} // Pass save handler
+            onSaveFavorite={handleSaveFavorite} 
           />
         </main>
         {!isMobile && (
@@ -400,7 +400,7 @@ export default function Home() {
             <PresetList 
                 onPresetSelect={handlePresetSelectFromDesktop} 
                 favorites={favorites}
-                onFavoriteSelect={handlePresetSelectFromDesktop} // Can use the same handler for now
+                onFavoriteSelect={handlePresetSelectFromDesktop} 
                 onRemoveFavorite={removeFavorite}
                 onClearAllFavorites={clearAllFavorites}
                 isLoadingFavorites={isLoadingFavorites}
@@ -413,3 +413,4 @@ export default function Home() {
     </>
   );
 }
+

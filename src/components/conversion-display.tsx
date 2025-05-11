@@ -1,29 +1,32 @@
 
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import type { ConversionResult, NumberFormat, UnitCategory } from '@/types';
+import type { ConversionResult, NumberFormat, UnitCategory, FavoriteItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getUnitsForCategoryAndMode } from '@/lib/unit-data'; // For favorite name generation
 
 interface ConversionDisplayProps {
     fromValue: number | undefined;
     fromUnit: string;
+    toUnit: string; // New: for save favorite logic
     result: ConversionResult | null;
     format: NumberFormat;
     onActualFormatChange: (
         actualFormat: NumberFormat,
         reason: 'magnitude' | 'user_choice' | null
     ) => void;
-    category: UnitCategory | ""; // Added category prop
-    onResultCopied?: (data: { // Callback for when result is copied
+    category: UnitCategory | ""; 
+    onResultCopied?: (data: { 
         category: UnitCategory;
         fromValue: number;
         fromUnit: string;
         toValue: number;
         toUnit: string;
     }) => void;
+    onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; // New: callback for saving favorite
 }
 
 const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
@@ -64,13 +67,8 @@ const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
         if (numRoundedForCheck % 1 === 0) {
             formattedString = numRoundedForCheck.toLocaleString(undefined, { maximumFractionDigits: 0 });
         } else {
-            // Ensure we show up to 7 decimal places but remove trailing zeros if less are needed.
-            // toLocaleString with maximumFractionDigits: 7 might add trailing zeros.
-            // A more robust way is to use toFixed and then manually format.
             let fixedStr = num.toFixed(7);
-            // Remove trailing zeros from the fractional part
             fixedStr = fixedStr.replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1');
-            // Potentially re-parse and use toLocaleString for grouping if needed, or just use fixedStr
             formattedString = parseFloat(fixedStr).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 7});
         }
     }
@@ -111,11 +109,13 @@ const formatFromValue = (num: number | undefined): string => {
 export const ConversionDisplay = React.memo(function ConversionDisplayComponent({ 
     fromValue, 
     fromUnit, 
+    toUnit,
     result, 
     format, 
     onActualFormatChange,
-    category, // Destructure category
-    onResultCopied // Destructure onResultCopied
+    category, 
+    onResultCopied,
+    onSaveFavorite 
 }: ConversionDisplayProps) {
     const { toast } = useToast();
 
@@ -142,8 +142,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                 variant: "confirmation",
                 duration: 1500,
             });
-            // Call onResultCopied if provided and category is valid
-            if (onResultCopied && category && fromValue !== undefined && result) {
+            if (onResultCopied && category && category !== "" && fromValue !== undefined && result) {
                 onResultCopied({
                     category: category,
                     fromValue: fromValue,
@@ -162,9 +161,47 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
         }
     }, [textToCopy, toast, onResultCopied, category, fromValue, fromUnit, result]);
 
+    const handleSaveToFavoritesInternal = React.useCallback(() => {
+        if (!category || category === "" || !fromUnit || !toUnit) {
+          toast({
+            title: "Cannot Save Favorite",
+            description: "Please select a category and both units before saving.",
+            variant: "destructive",
+            duration: 2000,
+          });
+          return;
+        }
+    
+        if (onSaveFavorite) {
+          const currentCategoryUnits = getUnitsForCategoryAndMode(category);
+          const fromUnitDetails = currentCategoryUnits.find(u => u.symbol === fromUnit);
+          const toUnitDetails = currentCategoryUnits.find(u => u.symbol === toUnit);
+
+          const fromUnitName = fromUnitDetails?.name || fromUnit;
+          const toUnitName = toUnitDetails?.name || toUnit;
+          const favoriteName = `${fromUnitName} to ${toUnitName}`;
+          
+          onSaveFavorite({
+            category: category,
+            fromUnit: fromUnit,
+            toUnit: toUnit,
+            name: favoriteName,
+          });
+          toast({
+            title: "Favorite Saved!",
+            description: `"${favoriteName}" added to your favorites.`,
+            variant: "success", 
+            duration: 2000,
+          });
+        }
+      }, [category, fromUnit, toUnit, onSaveFavorite, toast]);
+
+
     const screenReaderText = showPlaceholder
         ? (fromValue !== undefined && fromUnit ? `Waiting for conversion of ${formatFromValue(fromValue)} ${fromUnit}` : 'Enter a value and select units to convert')
         : `${formatFromValue(fromValue!)} ${fromUnit} equals ${formattedResultString} ${result.unit}`;
+    
+    const isSaveDisabled = !category || category === "" || !fromUnit || !toUnit;
 
     return (
         <>
@@ -172,7 +209,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                 {screenReaderText}
             </div>
             <Card className={cn(
-                "shadow-sm transition-opacity duration-300",
+                "relative shadow-sm transition-opacity duration-300", // Added relative for positioning the star button
                 showPlaceholder ? "bg-muted/50 border-muted opacity-60" : "bg-primary/10 border-primary/50"
             )}>
                 <CardContent className="p-4">
@@ -210,9 +247,23 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                         </div>
                     </div>
                 </CardContent>
+                {onSaveFavorite && !showPlaceholder && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleSaveToFavoritesInternal}
+                        className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-accent focus:text-accent disabled:text-muted-foreground/50 disabled:hover:text-muted-foreground/50"
+                        aria-label="Save conversion to favorites"
+                        disabled={isSaveDisabled}
+                    >
+                        <Star className={cn("h-5 w-5", !isSaveDisabled && "text-accent/80 hover:text-accent")} />
+                    </Button>
+                )}
             </Card>
         </>
     );
 });
 
 ConversionDisplay.displayName = 'ConversionDisplay';
+
