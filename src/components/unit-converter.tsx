@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -63,6 +62,7 @@ interface UnitConverterProps {
     toUnit: string;
   }) => void;
   onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; 
+  disableAddFavoriteButton?: boolean;
 }
 
 export interface UnitConverterHandle {
@@ -71,7 +71,7 @@ export interface UnitConverterHandle {
 }
 
 
-export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied, onSaveFavorite: onSaveFavoriteProp }, ref) {
+export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied, onSaveFavorite: onSaveFavoriteProp, disableAddFavoriteButton = false }, ref) {
   const [selectedCategoryLocal, setSelectedCategoryLocal] = React.useState<UnitCategory | "">("");
   const [conversionResult, setConversionResult] = React.useState<ConversionResult | null>(null);
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1);
@@ -610,6 +610,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     category={rhfCategory}
                     onResultCopied={onResultCopied}
                     onSaveFavorite={onSaveFavoriteProp}
+                    isAddFavoriteDisabled={disableAddFavoriteButton}
                   />
                  
                   <fieldset className="pt-4">
@@ -655,3 +656,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
 UnitConverter.displayName = 'UnitConverter';
 
+    

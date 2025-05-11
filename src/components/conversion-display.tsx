@@ -11,7 +11,7 @@ import { getUnitsForCategoryAndMode } from '@/lib/unit-data'; // For favorite na
 interface ConversionDisplayProps {
     fromValue: number | undefined;
     fromUnit: string;
-    toUnit: string; // New: for save favorite logic
+    toUnit: string; 
     result: ConversionResult | null;
     format: NumberFormat;
     onActualFormatChange: (
@@ -26,7 +26,8 @@ interface ConversionDisplayProps {
         toValue: number;
         toUnit: string;
     }) => void;
-    onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; // New: callback for saving favorite
+    onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void;
+    isAddFavoriteDisabled?: boolean; 
 }
 
 const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
@@ -115,7 +116,8 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
     onActualFormatChange,
     category, 
     onResultCopied,
-    onSaveFavorite 
+    onSaveFavorite,
+    isAddFavoriteDisabled = false
 }: ConversionDisplayProps) {
     const { toast } = useToast();
 
@@ -201,7 +203,8 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
         ? (fromValue !== undefined && fromUnit ? `Waiting for conversion of ${formatFromValue(fromValue)} ${fromUnit}` : 'Enter a value and select units to convert')
         : `${formatFromValue(fromValue!)} ${fromUnit} equals ${formattedResultString} ${result.unit}`;
     
-    const isSaveDisabled = !category || category === "" || !fromUnit || !toUnit;
+    const baseSaveDisabled = !category || category === "" || !fromUnit || !toUnit;
+    const finalSaveDisabled = baseSaveDisabled || isAddFavoriteDisabled;
 
     return (
         <>
@@ -209,7 +212,7 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                 {screenReaderText}
             </div>
             <Card className={cn(
-                "relative shadow-sm transition-opacity duration-300", // Added relative for positioning the star button
+                "relative shadow-sm transition-opacity duration-300", 
                 showPlaceholder ? "bg-muted/50 border-muted opacity-60" : "bg-primary/10 border-primary/50"
             )}>
                 <CardContent className="p-4">
@@ -255,9 +258,9 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
                         onClick={handleSaveToFavoritesInternal}
                         className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-accent focus:text-accent disabled:text-muted-foreground/50 disabled:hover:text-muted-foreground/50"
                         aria-label="Save conversion to favorites"
-                        disabled={isSaveDisabled}
+                        disabled={finalSaveDisabled}
                     >
-                        <Star className={cn("h-5 w-5", !isSaveDisabled && "text-accent/80 hover:text-accent")} />
+                        <Star className={cn("h-5 w-5", !finalSaveDisabled && "text-accent/80 hover:text-accent")} />
                     </Button>
                 )}
             </Card>
@@ -267,3 +270,4 @@ export const ConversionDisplay = React.memo(function ConversionDisplayComponent(
 
 ConversionDisplay.displayName = 'ConversionDisplay';
 
+    

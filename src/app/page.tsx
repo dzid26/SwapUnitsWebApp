@@ -56,6 +56,7 @@ const jsonLd = {
   keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, frequency, wavelength, Hz, THz, nm, km, metric, imperial, scientific notation, presets, history, favorites, atm, Pa, psi", 
 };
 
+const MAX_FAVORITES_FOR_BUTTON_DISABLE = 5;
 
 export default function Home() {
   const isMobile = useIsMobile();
@@ -69,6 +70,7 @@ export default function Home() {
   const displayPresetCount = Math.max(0, 12 - favorites.length);
   const displayPresetsForList = React.useMemo(() => availablePresets.slice(0, displayPresetCount), [availablePresets, displayPresetCount]);
 
+  const disableAddFavoriteButton = favorites.length >= MAX_FAVORITES_FOR_BUTTON_DISABLE;
 
   const handleResultCopied = React.useCallback((data: {
     category: UnitCategory;
@@ -398,7 +400,8 @@ export default function Home() {
             ref={unitConverterRef} 
             className="h-full" 
             onResultCopied={handleResultCopied}
-            onSaveFavorite={handleSaveFavorite} 
+            onSaveFavorite={handleSaveFavorite}
+            disableAddFavoriteButton={disableAddFavoriteButton} 
           />
         </main>
         {!isMobile && (
@@ -420,3 +423,5 @@ export default function Home() {
     </>
   );
 }
+
+    
