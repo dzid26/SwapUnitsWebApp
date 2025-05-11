@@ -273,7 +273,7 @@ export default function Home() {
                       <p className="text-sm text-muted-foreground">No history yet.</p>
                     ) : (
                       <ul className="space-y-1"> {/* Adjusted space-y */}
-                        {history.slice(0, 5).map((item) => ( 
+                        {history.map((item) => ( // Display all available history items (max 8)
                           <li key={item.id} className="flex items-center justify-between gap-1 group/history-item-mobile">
                              <SheetClose asChild>
                               <Button

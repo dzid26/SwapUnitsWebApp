@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { ConversionHistoryItem, UnitCategory } from '@/types';
 
 const HISTORY_KEY = 'swapUnitsConversionHistory';
-const MAX_HISTORY_ITEMS = 15;
+const MAX_HISTORY_ITEMS = 8; // Updated to 8
 
 export function useConversionHistory() {
   const [history, setHistory] = useState<ConversionHistoryItem[]>([]);
