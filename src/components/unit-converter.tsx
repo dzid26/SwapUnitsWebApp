@@ -24,10 +24,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { unitData, getUnitsForCategoryAndMode } from '@/lib/unit-data';
-import type { UnitCategory, Unit, ConversionResult, Preset, NumberFormat, ConversionHistoryItem } from '@/types';
+import type { UnitCategory, Unit, ConversionResult, Preset, NumberFormat, ConversionHistoryItem, FavoriteItem } from '@/types';
 import {
   ArrowRightLeft,
   FlaskConical,
+  Star, // Added Star icon
 } from 'lucide-react';
 
 import { UnitIcon } from './unit-icon';
@@ -38,6 +39,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useImperativeHandle, forwardRef } from 'react';
 import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 
 const formSchema = z.object({
@@ -62,15 +64,16 @@ interface UnitConverterProps {
     toValue: number;
     toUnit: string;
   }) => void;
+  onSaveFavorite?: (favoriteData: Omit<FavoriteItem, 'id'>) => void; // Added prop
 }
 
 export interface UnitConverterHandle {
-  handlePresetSelect: (preset: Preset) => void;
+  handlePresetSelect: (preset: Preset | FavoriteItem) => void; // Modified to accept FavoriteItem as well
   applyHistorySelect: (item: ConversionHistoryItem) => void;
 }
 
 
-export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied }, ref) {
+export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConverterProps>(function UnitConverterComponent({ className, onResultCopied, onSaveFavorite }, ref) {
   const [selectedCategoryLocal, setSelectedCategoryLocal] = React.useState<UnitCategory | "">("");
   const [conversionResult, setConversionResult] = React.useState<ConversionResult | null>(null);
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1);
@@ -78,6 +81,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   const [isNormalFormatDisabled, setIsNormalFormatDisabled] = React.useState<boolean>(false);
   const isMobile = useIsMobile();
   const [isSwapped, setIsSwapped] = React.useState(false);
+  const { toast } = useToast();
 
 
   const form = useForm<FormData>({
@@ -211,6 +215,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 case 'Data Storage': newFromUnitSymbol = 'GB'; newToUnitSymbol = 'MB'; break;
                 case 'Data Transfer Rate': newFromUnitSymbol = 'Mbps'; newToUnitSymbol = 'MB/s'; break;
                 case 'Bitcoin': newFromUnitSymbol = 'BTC'; newToUnitSymbol = 'sat'; break;
+                case 'Ethereum': newFromUnitSymbol = 'ETH'; newToUnitSymbol = 'Gwei'; break;
+                case 'EM Frequency': newFromUnitSymbol = 'Hz'; newToUnitSymbol = 'km (λ)'; break;
+                case 'Sound Frequency': newFromUnitSymbol = 'Hz'; newToUnitSymbol = 'cm (λ)'; break;
                 default:
                     newFromUnitSymbol = availableUnits[0]?.symbol || "";
                     newToUnitSymbol = availableUnits.find(u => u.symbol !== newFromUnitSymbol)?.symbol || newFromUnitSymbol;
@@ -312,7 +319,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
    }, []);
 
 
-  const internalHandlePresetSelect = React.useCallback((preset: Preset) => {
+  const internalHandlePresetSelect = React.useCallback((preset: Preset | FavoriteItem) => {
     const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
     if (!presetCategory) return;
 
@@ -337,16 +344,16 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
       setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
       setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
 
-      // Preserve the existing value
+      // Preserve the existing value if it's a valid number for presets/favorites
       if (valueToKeep !== undefined && String(valueToKeep).trim() !== '' && !isNaN(Number(valueToKeep))) {
-        setValue("value", Number(valueToKeep), { shouldValidate: true, shouldDirty: true });
+         setValue("value", Number(valueToKeep), { shouldValidate: true, shouldDirty: true });
          setLastValidInputValue(Number(valueToKeep));
       } else {
-        // If input was empty or invalid, or undefined, set to last valid or 1
-        const valToUse = lastValidInputValue !== undefined ? lastValidInputValue : 1;
-        setValue("value", valToUse, { shouldValidate: true, shouldDirty: true });
-        setLastValidInputValue(valToUse);
+         const valToUse = lastValidInputValue !== undefined ? lastValidInputValue : 1;
+         setValue("value", valToUse, { shouldValidate: true, shouldDirty: true });
+         setLastValidInputValue(valToUse);
       }
+
 
       setNumberFormat('normal');
       setIsNormalFormatDisabled(false);
@@ -421,6 +428,37 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
     event.preventDefault();
   };
 
+  const handleSaveToFavorites = () => {
+    if (!rhfCategory || !rhfFromUnit || !rhfToUnit) {
+      toast({
+        title: "Cannot Save Favorite",
+        description: "Please select a category and both units before saving.",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (onSaveFavorite) {
+      const fromUnitName = getUnitsForCategoryAndMode(rhfCategory).find(u => u.symbol === rhfFromUnit)?.name || rhfFromUnit;
+      const toUnitName = getUnitsForCategoryAndMode(rhfCategory).find(u => u.symbol === rhfToUnit)?.name || rhfToUnit;
+      const favoriteName = `${fromUnitName} to ${toUnitName}`;
+      
+      onSaveFavorite({
+        category: rhfCategory,
+        fromUnit: rhfFromUnit,
+        toUnit: rhfToUnit,
+        name: favoriteName,
+      });
+      toast({
+        title: "Favorite Saved!",
+        description: `"${favoriteName}" added to your favorites.`,
+        variant: "success",
+        duration: 2000,
+      });
+    }
+  };
+
 
   return (
      <Card className={cn("shadow-lg h-full flex flex-col", className)} aria-labelledby="unit-converter-title">
@@ -439,7 +477,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
            <p className={cn("text-sm text-muted-foreground mb-2 space-y-1", isMobile && "hidden")}>
              Quickly convert between units.
            </p>
-           <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+           <ol className={cn("text-sm text-muted-foreground list-decimal list-inside space-y-1", isMobile && "hidden")}>
              <li><span className="font-semibold text-primary">Select Category:</span> Choose the type of measurement (e.g., Length, Mass).</li>
              <li><span className="font-semibold text-primary">Choose Units & Input Value:</span> Pick the 'From' and 'To' units, then enter the value you want to convert.</li>
              <li><span className="font-semibold text-primary">View Result:</span> The converted value appears automatically below.</li>
@@ -596,15 +634,31 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     </FormItem>
                   )}
                 />
-                 <ConversionDisplay
-                  fromValue={lastValidInputValue}
-                  fromUnit={rhfFromUnit ?? ''}
-                  result={conversionResult}
-                  format={numberFormat}
-                  onActualFormatChange={handleActualFormatChange}
-                  category={rhfCategory}
-                  onResultCopied={onResultCopied}
-                 />
+                <div className="flex items-center gap-2">
+                  <ConversionDisplay
+                    fromValue={lastValidInputValue}
+                    fromUnit={rhfFromUnit ?? ''}
+                    result={conversionResult}
+                    format={numberFormat}
+                    onActualFormatChange={handleActualFormatChange}
+                    category={rhfCategory}
+                    onResultCopied={onResultCopied}
+                  />
+                  {onSaveFavorite && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSaveToFavorites}
+                      className="h-10 w-10 shrink-0 hover:bg-accent hover:text-accent-foreground"
+                      aria-label="Save conversion to favorites"
+                      disabled={!rhfCategory || !rhfFromUnit || !rhfToUnit}
+                    >
+                      <Star className="h-5 w-5" />
+                    </Button>
+                  )}
+                </div>
+                 
 
                   <fieldset className="pt-4">
                     <legend className="mb-2 block font-medium text-sm">Result Formatting</legend>

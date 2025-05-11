@@ -15,10 +15,11 @@ import { PresetList } from "@/components/preset-list";
 import { HistoryList } from "@/components/history-list";
 import { UnitIcon } from '@/components/unit-icon'; 
 import { unitData, getFilteredAndSortedPresets, getUnitsForCategoryAndMode } from '@/lib/unit-data'; 
-import type { Preset, UnitCategory, ConversionHistoryItem } from '@/types';
+import type { Preset, UnitCategory, ConversionHistoryItem, FavoriteItem } from '@/types';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useConversionHistory } from '@/hooks/use-conversion-history';
+import { useFavorites } from '@/hooks/use-favorites'; // Import useFavorites hook
 import { useToast } from '@/hooks/use-toast'; 
 import { Button } from '@/components/ui/button';
 import {
@@ -30,8 +31,9 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy } from 'lucide-react';
+import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 
 const jsonLd = {
@@ -46,13 +48,13 @@ const jsonLd = {
     'Unit Conversion', 'Length Conversion', 'Mass Conversion', 'Temperature Conversion', 'Time Conversion', 
     'Pressure Conversion', 'Area Conversion', 'Volume Conversion', 'Energy Conversion', 'Speed Conversion', 
     'Fuel Economy Conversion', 'Data Storage Conversion', 'Data Transfer Rate Conversion', 
-    'Bitcoin Conversion', 
+    'Bitcoin Conversion', 'Ethereum Conversion', 'EM Frequency Conversion', 'Sound Frequency Conversion',
     'Metric Units', 'Imperial Units', 'Scientific Notation Option',
-    'Common Conversion Presets', 'Copy to Clipboard', 'Responsive Design', 
+    'Common Conversion Presets', 'Save Favorite Conversions', 'Copy to Clipboard', 'Responsive Design', 
     'Conversion History'
   ],
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, metric, imperial, scientific notation, presets, yr, history, atm, Pa, psi", 
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, frequency, wavelength, Hz, THz, nm, km, metric, imperial, scientific notation, presets, history, favorites, atm, Pa, psi", 
 };
 
 
@@ -62,6 +64,8 @@ export default function Home() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
+  const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); // Use favorites hook
+
 
   const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
 
@@ -85,18 +89,23 @@ export default function Home() {
   }, [isMobile]);
 
 
-  const onMobilePresetSelect = (preset: Preset) => {
+  const onMobilePresetSelect = (preset: Preset | FavoriteItem) => { // Can be Preset or FavoriteItem
     if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
     }
     setIsSheetOpen(false); 
   };
 
-  const handlePresetSelectFromDesktop = (preset: Preset) => {
+  const handlePresetSelectFromDesktop = (preset: Preset | FavoriteItem) => { // Can be Preset or FavoriteItem
     if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
     }
   };
+  
+  const handleSaveFavorite = React.useCallback((favoriteData: Omit<FavoriteItem, 'id'>) => {
+    addFavorite(favoriteData);
+  }, [addFavorite]);
+
 
   const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault(); 
@@ -248,9 +257,69 @@ export default function Home() {
                       </ul>
                     )}
                   </div>
+                  
+                  <Separator className="my-0" />
+
+                  {/* My Favorites Section in Mobile Sheet */}
+                  <div className="p-4 border-b">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-md font-semibold text-accent flex items-center gap-2">
+                            <Star className="h-4 w-4" aria-hidden="true" />
+                            My Favorites
+                        </h3>
+                        {favorites.length > 0 && (
+                            <SheetClose asChild>
+                                <Button variant="outline" size="xs" onClick={clearAllFavorites} aria-label="Clear all favorites" className="px-3 py-1.5">
+                                    Clear All
+                                </Button>
+                            </SheetClose>
+                        )}
+                    </div>
+                    {favorites.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No favorites yet.</p>
+                    ) : (
+                        <ul className="space-y-1">
+                            {favorites.map((fav) => (
+                                <li key={fav.id} className="flex items-center justify-between gap-1 group/fav-item-mobile">
+                                    <SheetClose asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className="flex-grow justify-start text-left h-auto py-2 px-3 hover:bg-accent hover:text-accent-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm"
+                                            onClick={() => onMobilePresetSelect(fav)}
+                                            aria-label={`Apply favorite: ${fav.name}`}
+                                        >
+                                            <UnitIcon category={fav.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium break-words">{fav.name}</p>
+                                                <p className="text-xs text-muted-foreground break-words">{fav.category}</p>
+                                            </div>
+                                        </Button>
+                                    </SheetClose>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive opacity-100 transition-opacity"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeFavorite(fav.id);
+                                        }}
+                                        aria-label={`Remove favorite: ${fav.name}`}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                  </div>
+                  
+                  <Separator className="my-0" />
 
                   <div className="p-4">
-                    <h3 className="text-md font-semibold text-foreground mb-3">Common Conversions</h3>
+                    <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <List className="h-4 w-4" aria-hidden="true" />
+                        Common Conversions
+                    </h3>
                     <ul className="space-y-2">
                       {displayPresets.map((preset, index) => (
                         <li key={`${preset.category}-${preset.name}-${index}`}>
@@ -323,11 +392,20 @@ export default function Home() {
             ref={unitConverterRef} 
             className="h-full" 
             onResultCopied={handleResultCopied}
+            onSaveFavorite={handleSaveFavorite} // Pass save handler
           />
         </main>
         {!isMobile && (
           <aside className="hidden md:block w-full max-w-xs" role="complementary">
-            <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
+            <PresetList 
+                onPresetSelect={handlePresetSelectFromDesktop} 
+                favorites={favorites}
+                onFavoriteSelect={handlePresetSelectFromDesktop} // Can use the same handler for now
+                onRemoveFavorite={removeFavorite}
+                onClearAllFavorites={clearAllFavorites}
+                isLoadingFavorites={isLoadingFavorites}
+                className="h-full"
+            />
           </aside>
         )}
       </div>
@@ -335,6 +413,3 @@ export default function Home() {
     </>
   );
 }
-
-
-

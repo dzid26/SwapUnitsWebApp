@@ -4,7 +4,7 @@ export type Unit = {
   name: string;
   symbol: string;
   factor: number; // Factor to convert from this unit to the base unit of the category
-  mode?: 'basic' | 'advanced' | 'all'; // To distinguish units by mode
+  mode?: 'basic' | 'all'; // To distinguish units by mode
   unitType?: 'frequency' | 'wavelength'; // To distinguish unit types within a category
 };
 
@@ -43,10 +43,15 @@ export type Preset = {
     name: string;
 };
 
-export type NumberFormat = 'normal' | 'scientific';
+export type FavoriteItem = {
+  id: string;
+  category: UnitCategory;
+  fromUnit: string;
+  toUnit: string;
+  name: string;
+};
 
-// Removed ConverterMode type
-// export type ConverterMode = 'basic' | 'advanced';
+export type NumberFormat = 'normal' | 'scientific';
 
 export type ConversionHistoryItem = {
   id: string;
@@ -57,4 +62,5 @@ export type ConversionHistoryItem = {
   toUnit: string;
   timestamp: number;
 };
+
 
