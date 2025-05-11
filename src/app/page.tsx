@@ -1,3 +1,4 @@
+
 'use client'; 
 
 import * as React from 'react';
@@ -63,7 +64,7 @@ export default function Home() {
   const [converterMode, setConverterMode] = React.useState<ConverterMode>('basic');
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
 
-  const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(), []);
+  const displayPresets = React.useMemo(() => getFilteredAndSortedPresets(converterMode), [converterMode]);
 
   const handleResultCopied = React.useCallback((data: {
     category: UnitCategory;
@@ -85,8 +86,10 @@ export default function Home() {
         targetMode = 'advanced';
       } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
         const allUnitsInCat = getUnitsForCategoryAndMode(item.category, 'advanced');
+        // Check if units are strictly basic, not 'all'
         const isFromUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.fromUnit)?.mode === 'basic';
         const isToUnitStrictlyBasic = allUnitsInCat.find(u=>u.symbol === item.toUnit)?.mode === 'basic';
+
         if(isFromUnitStrictlyBasic && isToUnitStrictlyBasic){
             targetMode = 'basic';
         }
@@ -110,9 +113,18 @@ export default function Home() {
     if (unitConverterRef.current) {
       const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
       const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
-      if ((fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') && converterMode === 'basic') {
-        setConverterMode('advanced');
+      
+      let targetMode = converterMode;
+      if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
+          targetMode = 'advanced';
+      } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
+          targetMode = 'basic';
       }
+      
+      if (targetMode !== converterMode) {
+        setConverterMode(targetMode);
+      }
+
       setTimeout(() => {
         if (unitConverterRef.current) {
          unitConverterRef.current.handlePresetSelect(preset);
@@ -126,9 +138,18 @@ export default function Home() {
     if (unitConverterRef.current) {
       const fromUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.fromUnit);
       const toUnitDetails = unitData[preset.category]?.units.find(u => u.symbol === preset.toUnit);
-      if ((fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') && converterMode === 'basic') {
-        setConverterMode('advanced');
+
+      let targetMode = converterMode;
+       if (fromUnitDetails?.mode === 'advanced' || toUnitDetails?.mode === 'advanced') {
+          targetMode = 'advanced';
+      } else if (fromUnitDetails?.mode === 'basic' && toUnitDetails?.mode === 'basic' && converterMode === 'advanced') {
+          targetMode = 'basic';
       }
+
+      if (targetMode !== converterMode) {
+        setConverterMode(targetMode);
+      }
+      
       setTimeout(() => {
          if (unitConverterRef.current) {
             unitConverterRef.current.handlePresetSelect(preset);
@@ -358,10 +379,10 @@ export default function Home() {
       <div className={cn(
         "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch",
         "pt-2 pb-4 px-4 sm:pt-4 sm:pb-8 sm:px-8 md:pt-6 md:pb-12 md:px-12 lg:pt-8 lg:pb-16 lg:px-16 xl:pt-10 xl:pb-20 xl:px-20",
-        !isMobile && "md:grid-cols-[180px_1fr_auto] md:gap-8" 
+         !isMobile && "md:grid-cols-[minmax(0,20rem)_1fr_minmax(0,20rem)] md:gap-8"
       )}>
         {!isMobile && (
-          <aside className="hidden md:block max-w-[180px]" role="complementary">
+          <aside className="hidden md:block w-full max-w-xs" role="complementary">
             <HistoryList 
                 items={history} 
                 onHistorySelect={onHistoryItemSelect} 
@@ -382,7 +403,7 @@ export default function Home() {
           />
         </main>
         {!isMobile && (
-          <aside className="hidden md:block max-w-[200px]" role="complementary">
+          <aside className="hidden md:block w-full max-w-xs" role="complementary">
             <PresetList onPresetSelect={handlePresetSelectFromDesktop} className="h-full"/>
           </aside>
         )}
@@ -394,3 +415,4 @@ export default function Home() {
     </>
   );
 }
+

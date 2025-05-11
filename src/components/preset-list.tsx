@@ -1,23 +1,25 @@
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getFilteredAndSortedPresets } from "@/lib/unit-data"; // Keep import to get presets data
-import type { Preset } from '@/types';
+import { getFilteredAndSortedPresets } from "@/lib/unit-data"; 
+import type { Preset, ConverterMode } from '@/types'; // Added ConverterMode
 import { List } from 'lucide-react';
 import { UnitIcon } from './unit-icon';
 import { cn } from "@/lib/utils";
 
 interface PresetListProps {
     onPresetSelect: (preset: Preset) => void;
-    className?: string; // Add className prop
+    className?: string; 
+    // converterMode?: ConverterMode; // Optional: pass if needed for filtering, or handle filtering in getFilteredAndSortedPresets
 }
 
 export const PresetList = React.memo(function PresetListComponent({ onPresetSelect, className }: PresetListProps) {
-    // Get presets directly, sorting/filtering logic is in the utility function
-    const displayPresets = getFilteredAndSortedPresets();
+    // Consider passing converterMode if presets should dynamically change with mode
+    // For now, assuming getFilteredAndSortedPresets handles mode or shows all relevant ones
+    const displayPresets = getFilteredAndSortedPresets(); // Potentially: getFilteredAndSortedPresets(converterMode)
 
     return (
-        <Card className={cn("shadow-lg hidden md:block", className)} aria-label="Common Unit Conversion Presets">
+        <Card className={cn("shadow-lg hidden md:block w-full", className)} aria-label="Common Unit Conversion Presets">
             <CardHeader>
                 <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
                     <List className="h-5 w-5" aria-hidden="true" />
@@ -30,8 +32,8 @@ export const PresetList = React.memo(function PresetListComponent({ onPresetSele
                         <li key={`${preset.category}-${preset.name}-${index}`}>
                           <Button
                               variant="ghost"
-                              className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm" // Added text-sm
-                              onClick={() => onPresetSelect(preset)} // Use prop directly
+                              className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-primary hover:text-primary-foreground overflow-hidden whitespace-normal flex items-center gap-2 text-sm" 
+                              onClick={() => onPresetSelect(preset)} 
                               aria-label={`Select preset: ${preset.name}`}
                           >
                               <UnitIcon category={preset.category} className="h-4 w-4 shrink-0" aria-hidden="true" />
