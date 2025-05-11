@@ -1,6 +1,6 @@
 
 
-import type { UnitCategory, UnitData, Preset, Unit, FavoriteItem } from '@/types';
+import type { UnitCategory, UnitData, Preset, Unit, FavoriteItem, ConverterMode } from '@/types';
 
 // Base units:
 // Length: Meter (m)
@@ -16,6 +16,12 @@ import type { UnitCategory, UnitData, Preset, Unit, FavoriteItem } from '@/types
 // Data Storage: Byte (B)
 // Data Transfer Rate: Bits per second (bps)
 // Bitcoin: Bitcoin (BTC)
+// Ethereum: Wei (wei)
+// EM Frequency: Hertz (Hz)
+// Sound Frequency: Hertz (Hz)
+
+const C = 299792458; // Speed of light in m/s
+const SPEED_OF_SOUND = 343; // Speed of sound in m/s at 20°C in dry air
 
 export const unitData: Record<UnitCategory, UnitData> = {
   Length: {
@@ -25,10 +31,12 @@ export const unitData: Record<UnitCategory, UnitData> = {
       { name: 'Kilometer', symbol: 'km', factor: 1000, mode: 'all' },
       { name: 'Centimeter', symbol: 'cm', factor: 0.01, mode: 'all' },
       { name: 'Millimeter', symbol: 'mm', factor: 0.001, mode: 'all' },
+      { name: 'Micrometer', symbol: 'µm', factor: 1e-6, mode: 'advanced' },
+      { name: 'Nanometer', symbol: 'nm', factor: 1e-9, mode: 'advanced' },
       { name: 'Mile', symbol: 'mi', factor: 1609.34, mode: 'all' },
       { name: 'Foot', symbol: 'ft', factor: 0.3048, mode: 'all' },
       { name: 'Inch', symbol: 'in', factor: 0.0254, mode: 'all' },
-    ],
+    ].sort((a,b) => a.factor - b.factor),
   },
   Mass: {
     name: 'Mass',
@@ -39,19 +47,23 @@ export const unitData: Record<UnitCategory, UnitData> = {
       { name: 'Metric Ton', symbol: 't', factor: 1000, mode: 'all' },
       { name: 'Pound', symbol: 'lb', factor: 0.453592, mode: 'all' },
       { name: 'Ounce', symbol: 'oz', factor: 0.0283495, mode: 'all' },
-    ],
+    ].sort((a,b) => a.factor - b.factor),
   },
   Temperature: {
     name: 'Temperature',
     units: [
-      { name: 'Celsius', symbol: '°C', factor: 1, mode: 'all' },
-      { name: 'Fahrenheit', symbol: '°F', factor: 1, mode: 'all' },
-      { name: 'Kelvin', symbol: 'K', factor: 1, mode: 'all' },
+      { name: 'Celsius', symbol: '°C', factor: 1, mode: 'all' }, // Base for Temperature
+      { name: 'Fahrenheit', symbol: '°F', factor: 1, mode: 'all' }, // Factor is dummy, handled by custom logic
+      { name: 'Kelvin', symbol: 'K', factor: 1, mode: 'all' }, // Factor is dummy, handled by custom logic
     ],
   },
   Time: {
     name: 'Time',
     units: [
+      { name: 'Femtosecond', symbol: 'fs', factor: 1e-15, mode: 'advanced' },
+      { name: 'Picosecond', symbol: 'ps', factor: 1e-12, mode: 'advanced' },
+      { name: 'Nanosecond', symbol: 'ns', factor: 1e-9, mode: 'advanced' },
+      { name: 'Microsecond', symbol: 'µs', factor: 1e-6, mode: 'advanced' },
       { name: 'Millisecond', symbol: 'ms', factor: 0.001, mode: 'all' },
       { name: 'Second', symbol: 's', factor: 1, mode: 'all' },
       { name: 'Minute', symbol: 'min', factor: 60, mode: 'all' },
@@ -68,7 +80,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
       { name: 'Bar', symbol: 'bar', factor: 100000, mode: 'all' },
       { name: 'Atmosphere', symbol: 'atm', factor: 101325, mode: 'all' },
       { name: 'Pound per square inch', symbol: 'psi', factor: 6894.76, mode: 'all' },
-    ],
+    ].sort((a,b) => a.factor - b.factor),
   },
   Area: {
     name: 'Area',
@@ -83,7 +95,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
         { name: 'Square Inch', symbol: 'in²', factor: 0.00064516, mode: 'all' },
         { name: 'Hectare', symbol: 'ha', factor: 10000, mode: 'all' },
         { name: 'Acre', symbol: 'acre', factor: 4046.86, mode: 'all' },
-    ],
+    ].sort((a,b) => a.factor - b.factor),
    },
     Volume: {
         name: 'Volume',
@@ -94,7 +106,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Milliliter', symbol: 'mL', factor: 1e-6, mode: 'all' },
             { name: 'Gallon (US)', symbol: 'gal', factor: 0.00378541, mode: 'all' },
             { name: 'Cubic Foot', symbol: 'ft³', factor: 0.0283168, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     Energy: {
         name: 'Energy',
@@ -105,7 +117,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Kilocalorie (food)', symbol: 'kcal', factor: 4184, mode: 'all' },
             { name: 'Kilowatt Hour', symbol: 'kWh', factor: 3.6e6, mode: 'all' },
             { name: 'British Thermal Unit', symbol: 'BTU', factor: 1055.06, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     Speed: {
         name: 'Speed',
@@ -113,15 +125,17 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Meter per second', symbol: 'm/s', factor: 1, mode: 'all' },
             { name: 'Kilometer per hour', symbol: 'km/h', factor: 1 / 3.6, mode: 'all' },
             { name: 'Mile per hour', symbol: 'mph', factor: 0.44704, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     'Fuel Economy': {
         name: 'Fuel Economy',
         units: [
-            { name: 'Kilometer per Liter', symbol: 'km/L', factor: 1, mode: 'all' },
-            { name: 'Liter per 100 kilometers', symbol: 'L/100km', factor: 100, mode: 'all' },
-            { name: 'Mile per Gallon (US)', symbol: 'MPG (US)', factor: 0.425144, mode: 'all' },
-            { name: 'Mile per Gallon (UK)', symbol: 'MPG (UK)', factor: 0.354006, mode: 'all' },
+            // Higher factor = better fuel economy (e.g. km/L)
+            // For L/100km, it's inverse, so base unit is km/L, and L/100km factor is 100 (to convert L/100km to km/L: 100 / (L/100km_value))
+            { name: 'Kilometer per Liter', symbol: 'km/L', factor: 1, mode: 'all' }, // Base for this category
+            { name: 'Liter per 100 kilometers', symbol: 'L/100km', factor: 100, mode: 'all' }, // Special handling: value is 100/X km/L
+            { name: 'Mile per Gallon (US)', symbol: 'MPG (US)', factor: 0.425144, mode: 'all' }, // MPG to km/L
+            { name: 'Mile per Gallon (UK)', symbol: 'MPG (UK)', factor: 0.354006, mode: 'all' }, // MPG (UK imperial) to km/L
         ],
     },
     'Data Storage': {
@@ -132,7 +146,7 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Megabyte', symbol: 'MB', factor: 1024 ** 2, mode: 'all' },
             { name: 'Gigabyte', symbol: 'GB', factor: 1024 ** 3, mode: 'all' },
             { name: 'Terabyte', symbol: 'TB', factor: 1024 ** 4, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     'Data Transfer Rate': {
         name: 'Data Transfer Rate',
@@ -141,51 +155,78 @@ export const unitData: Record<UnitCategory, UnitData> = {
             { name: 'Kilobits per second', symbol: 'Kbps', factor: 1000, mode: 'all' },
             { name: 'Megabits per second', symbol: 'Mbps', factor: 1e6, mode: 'all' },
             { name: 'Gigabits per second', symbol: 'Gbps', factor: 1e9, mode: 'all' },
-            { name: 'Bytes per second', symbol: 'B/s', factor: 8, mode: 'all' },
-            { name: 'Kilobytes per second', symbol: 'KB/s', factor: 8 * 1000, mode: 'all' },
+            { name: 'Bytes per second', symbol: 'B/s', factor: 8, mode: 'all' }, // 1 Byte = 8 bits
+            { name: 'Kilobytes per second', symbol: 'KB/s', factor: 8 * 1000, mode: 'all' }, // Using 1000 for Kilo in transfer rates
             { name: 'Megabytes per second', symbol: 'MB/s', factor: 8 * 1e6, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     Bitcoin: {
         name: 'Bitcoin',
         units: [
             { name: 'Bitcoin', symbol: 'BTC', factor: 1, mode: 'all' },
             { name: 'Satoshi', symbol: 'sat', factor: 1e-8, mode: 'all' },
-        ],
+        ].sort((a,b) => a.factor - b.factor),
     },
     Ethereum: {
         name: 'Ethereum',
-        units: [],
+        units: [
+            { name: 'Ethereum', symbol: 'ETH', factor: 1, mode: 'advanced'},
+            { name: 'Gwei', symbol: 'Gwei', factor: 1e-9, mode: 'advanced'},
+            { name: 'Wei', symbol: 'Wei', factor: 1e-18, mode: 'advanced'},
+        ].sort((a,b) => a.factor - b.factor),
     },
     'EM Frequency': {
-      name: 'EM Frequency & Wavelength',
-      units: [],
+        name: 'EM Frequency & Wavelength',
+        units: [
+            // Frequencies
+            { name: 'Terahertz', symbol: 'THz', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
+            { name: 'Gigahertz', symbol: 'GHz', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
+            { name: 'Megahertz', symbol: 'MHz', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
+            { name: 'Kilohertz', symbol: 'kHz', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
+            { name: 'Hertz', symbol: 'Hz', factor: 1, mode: 'advanced', unitType: 'frequency' }, // Base for frequency
+            { name: 'Millihertz', symbol: 'mHz', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
+            // Wavelengths (factor converts wavelength to base frequency Hz: f = c / λ)
+            { name: 'Kilometer (λ)', symbol: 'km (λ)', factor: C / 1000, mode: 'advanced', unitType: 'wavelength' },
+            { name: 'Meter (λ)', symbol: 'm (λ)', factor: C / 1, mode: 'advanced', unitType: 'wavelength' },
+            { name: 'Centimeter (λ)', symbol: 'cm (λ)', factor: C / 0.01, mode: 'advanced', unitType: 'wavelength' },
+            { name: 'Millimeter (λ)', symbol: 'mm (λ)', factor: C / 0.001, mode: 'advanced', unitType: 'wavelength' },
+            { name: 'Micrometer (λ)', symbol: 'µm (λ)', factor: C / 1e-6, mode: 'advanced', unitType: 'wavelength' },
+            { name: 'Nanometer (λ)', symbol: 'nm (λ)', factor: C / 1e-9, mode: 'advanced', unitType: 'wavelength' },
+        ],
     },
     'Sound Frequency': {
       name: 'Sound Frequency & Wavelength',
-      units: [],
+      units: [
+          // Frequencies
+          { name: 'Terahertz', symbol: 'THz', factor: 1e12, mode: 'advanced', unitType: 'frequency' },
+          { name: 'Gigahertz', symbol: 'GHz', factor: 1e9, mode: 'advanced', unitType: 'frequency' },
+          { name: 'Megahertz', symbol: 'MHz', factor: 1e6, mode: 'advanced', unitType: 'frequency' },
+          { name: 'Kilohertz', symbol: 'kHz', factor: 1e3, mode: 'advanced', unitType: 'frequency' },
+          { name: 'Hertz', symbol: 'Hz', factor: 1, mode: 'advanced', unitType: 'frequency' }, // Base for frequency
+          { name: 'Millihertz', symbol: 'mHz', factor: 1e-3, mode: 'advanced', unitType: 'frequency' },
+          // Wavelengths (factor converts wavelength to base frequency Hz: f = v_sound / λ)
+          { name: 'Kilometer (λ)', symbol: 'km (λ)', factor: SPEED_OF_SOUND / 1000, mode: 'advanced', unitType: 'wavelength' },
+          { name: 'Meter (λ)', symbol: 'm (λ)', factor: SPEED_OF_SOUND / 1, mode: 'advanced', unitType: 'wavelength' },
+          { name: 'Centimeter (λ)', symbol: 'cm (λ)', factor: SPEED_OF_SOUND / 0.01, mode: 'advanced', unitType: 'wavelength' },
+          { name: 'Millimeter (λ)', symbol: 'mm (λ)', factor: SPEED_OF_SOUND / 0.001, mode: 'advanced', unitType: 'wavelength' },
+      ],
     },
 };
 
 export const allPresets: Preset[] = [
+  // Basic Mode Presets (ensure these use units available in 'all' or 'basic' mode)
   { category: 'Length', fromUnit: 'm', toUnit: 'ft', name: 'Meter to Feet' },
   { category: 'Length', fromUnit: 'km', toUnit: 'mi', name: 'Kilometer to Miles' },
-  { category: 'Length', fromUnit: 'in', toUnit: 'cm', name: 'Inches to Centimeters' },
   { category: 'Mass', fromUnit: 'kg', toUnit: 'lb', name: 'Kilograms to Pounds' },
-  { category: 'Mass', fromUnit: 'lb', toUnit: 'kg', name: 'Pounds to Kilograms' },
   { category: 'Mass', fromUnit: 'g', toUnit: 'oz', name: 'Grams to Ounces' },
   { category: 'Temperature', fromUnit: '°C', toUnit: '°F', name: 'Celsius to Fahrenheit' },
   { category: 'Temperature', fromUnit: '°F', toUnit: '°C', name: 'Fahrenheit to Celsius' },
   { category: 'Time', fromUnit: 'hr', toUnit: 'min', name: 'Hours to Minutes' },
   { category: 'Time', fromUnit: 's', toUnit: 'ms', name: 'Seconds to Milliseconds' },
   { category: 'Pressure', fromUnit: 'psi', toUnit: 'kPa', name: 'PSI to Kilopascals' },
-  { category: 'Pressure', fromUnit: 'bar', toUnit: 'psi', name: 'Bar to PSI' },
   { category: 'Pressure', fromUnit: 'Pa', toUnit: 'atm', name: 'Pascals to Atmospheres' },
-  { category: 'Pressure', fromUnit: 'atm', toUnit: 'Pa', name: 'Atmospheres to Pascals' },
   { category: 'Area', fromUnit: 'm²', toUnit: 'ft²', name: 'Square Meters to Square Feet' },
   { category: 'Area', fromUnit: 'acre', toUnit: 'm²', name: 'Acres to Square Meters' },
-  { category: 'Area', fromUnit: 'km²', toUnit: 'mi²', name: 'Square Kilometers to Square Miles' },
-  { category: 'Area', fromUnit: 'm²', toUnit: 'acre', name: 'Square Meters to Acres' },
   { category: 'Volume', fromUnit: 'L', toUnit: 'gal', name: 'Liters to Gallons (US)' },
   { category: 'Volume', fromUnit: 'mL', toUnit: 'L', name: 'Milliliters to Liters' },
   { category: 'Energy', fromUnit: 'kWh', toUnit: 'BTU', name: 'Kilowatt Hours to BTU' },
@@ -193,61 +234,99 @@ export const allPresets: Preset[] = [
   { category: 'Speed', fromUnit: 'km/h', toUnit: 'mph', name: 'km/h to mph' },
   { category: 'Speed', fromUnit: 'm/s', toUnit: 'km/h', name: 'm/s to km/h' },
   { category: 'Fuel Economy', fromUnit: 'MPG (US)', toUnit: 'km/L', name: 'MPG (US) to km/L' },
-  { category: 'Fuel Economy', fromUnit: 'L/100km', toUnit: 'MPG (US)', name: 'L/100km to MPG (US)' },
-  { category: 'Fuel Economy', fromUnit: 'km/L', toUnit: 'MPG (UK)', name: 'km/L to MPG (UK)' },
+  { category: 'Fuel Economy', fromUnit: 'km/L', toUnit: 'MPG (UK)', name: 'km/L to MPG (UK)'},
   { category: 'Data Storage', fromUnit: 'GB', toUnit: 'MB', name: 'Gigabytes to Megabytes' },
   { category: 'Data Storage', fromUnit: 'TB', toUnit: 'GB', name: 'Terabytes to Gigabytes' },
   { category: 'Data Transfer Rate', fromUnit: 'Mbps', toUnit: 'MB/s', name: 'Mbps to MB/s' },
   { category: 'Data Transfer Rate', fromUnit: 'Gbps', toUnit: 'Mbps', name: 'Gbps to Mbps' },
   { category: 'Bitcoin', fromUnit: 'BTC', toUnit: 'sat', name: 'Bitcoin to Satoshi' },
   { category: 'Bitcoin', fromUnit: 'sat', toUnit: 'BTC', name: 'Satoshi to Bitcoin' },
+
+  // Advanced Mode Specific Presets (these might use units only in 'advanced' mode)
+  { category: 'Time', fromUnit: 's', toUnit: 'ns', name: 'Seconds to Nanoseconds' },
+  { category: 'Length', fromUnit: 'm', toUnit: 'nm', name: 'Meters to Nanometers' },
+  { category: 'Ethereum', fromUnit: 'ETH', toUnit: 'Gwei', name: 'Ethereum to Gwei' },
+  { category: 'Ethereum', fromUnit: 'Gwei', toUnit: 'Wei', name: 'Gwei to Wei' },
+  { category: 'EM Frequency', fromUnit: 'GHz', toUnit: 'nm (λ)', name: 'GHz to Nanometers (EM)' },
+  { category: 'EM Frequency', fromUnit: 'MHz', toUnit: 'm (λ)', name: 'MHz to Meters (EM)' },
+  { category: 'Sound Frequency', fromUnit: 'kHz', toUnit: 'cm (λ)', name: 'kHz to Centimeters (Sound)' },
+  { category: 'Sound Frequency', fromUnit: 'Hz', toUnit: 'm (λ)', name: 'Hz to Meters (Sound)' },
 ];
+
 
 const categoryOrder: UnitCategory[] = [
   'Length', 'Mass', 'Temperature', 'Time', 'Bitcoin',
   'Pressure', 'Area', 'Volume', 'Energy', 'Speed',
   'Fuel Economy', 'Data Storage', 'Data Transfer Rate',
+  'Ethereum', 'EM Frequency', 'Sound Frequency',
 ];
 
-export const getUnitsForCategoryAndMode = (category: UnitCategory | ""): Unit[] => {
-  const categoryKey = category as UnitCategory;
-  if (!category || !unitData[categoryKey]) {
+export const getUnitsForCategoryAndMode = (category: UnitCategory | "", mode: ConverterMode = 'basic'): Unit[] => {
+  const categoryKey = category as UnitCategory; // Type assertion
+  if (!categoryKey || !unitData[categoryKey]) {
     return [];
   }
-  return unitData[categoryKey].units ?? [];
+  const units = unitData[categoryKey].units ?? [];
+  if (mode === 'basic') {
+    return units.filter(unit => unit.mode === 'all' || unit.mode === 'basic');
+  }
+  return units; // Advanced mode includes all units for the category
 };
 
-export const getFilteredAndSortedPresets = (favorites: FavoriteItem[] = []): Preset[] => {
+
+export const getFilteredAndSortedPresets = (
+    favorites: FavoriteItem[] = [],
+    currentMode: ConverterMode = 'basic'
+): Preset[] => {
     const favoriteSignatures = new Set(
         favorites.map(fav => `${fav.category}-${fav.fromUnit}-${fav.toUnit}`)
     );
 
     // Filter out presets that are already favorites
-    const availablePresets = allPresets.filter(preset => {
+    const presetsNotInFavorites = allPresets.filter(preset => {
         const presetSignature = `${preset.category}-${preset.fromUnit}-${preset.toUnit}`;
         return !favoriteSignatures.has(presetSignature);
     });
-    
-    // Validate that units in presets are available in the 'all' mode (which is the only mode now)
-    const validPresets = availablePresets.filter(preset => {
-        const fromUnitDetails = getUnitsForCategoryAndMode(preset.category).find(u => u.symbol === preset.fromUnit);
-        const toUnitDetails = getUnitsForCategoryAndMode(preset.category).find(u => u.symbol === preset.toUnit);
-        return fromUnitDetails && toUnitDetails; // Both units must exist in the 'all' mode for the category
+
+    // Validate that units in presets are available for the current mode
+    const validPresetsForMode = presetsNotInFavorites.filter(preset => {
+        const fromUnitDetails = getUnitsForCategoryAndMode(preset.category, currentMode).find(u => u.symbol === preset.fromUnit);
+        const toUnitDetails = getUnitsForCategoryAndMode(preset.category, currentMode).find(u => u.symbol === preset.toUnit);
+        return fromUnitDetails && toUnitDetails;
     });
 
-
-    // Sort according to existing logic (categoryOrder, then maybe by name)
-    const sortedAvailablePresets = [...validPresets].sort((a, b) => {
+    // Sort valid presets: first by categoryOrder, then by preset name
+    const sortedValidPresets = [...validPresetsForMode].sort((a, b) => {
         const indexA = categoryOrder.indexOf(a.category);
         const indexB = categoryOrder.indexOf(b.category);
 
         if (indexA !== indexB) {
-            if (indexA === -1) return 1; // Presets with categories not in order go to the end
+            if (indexA === -1) return 1; // Categories not in order go to the end
             if (indexB === -1) return -1;
             return indexA - indexB;
         }
-        // Fallback sort by name if categories are the same or not in order
-        return a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name); // If same category, sort by name
     });
-    return sortedAvailablePresets;
+
+    // Select one preset per category from the sorted list
+    const onePresetPerCategoryList: Preset[] = [];
+    const addedCategories = new Set<UnitCategory>();
+
+    for (const preset of sortedValidPresets) {
+        if (!addedCategories.has(preset.category)) {
+            onePresetPerCategoryList.push(preset);
+            addedCategories.add(preset.category);
+        }
+    }
+    
+    // Ensure Bitcoin preset is 5th if possible, by reordering if necessary
+    // This step assumes 'Bitcoin' category has a preset in `onePresetPerCategoryList`
+    const bitcoinPresetIndex = onePresetPerCategoryList.findIndex(p => p.category === 'Bitcoin');
+    if (bitcoinPresetIndex > -1 && bitcoinPresetIndex !== 4 && onePresetPerCategoryList.length > 4) {
+        const bitcoinPreset = onePresetPerCategoryList.splice(bitcoinPresetIndex, 1)[0];
+        onePresetPerCategoryList.splice(Math.min(4, onePresetPerCategoryList.length), 0, bitcoinPreset);
+    }
+
+
+    return onePresetPerCategoryList;
 };
