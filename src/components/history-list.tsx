@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,7 @@ export const HistoryList = React.memo(function HistoryListComponent({ items, onH
 
     return (
         <Card className={cn("shadow-lg flex flex-col w-full", className)} aria-label="Conversion History">
-            <CardHeader className="flex-shrink-0">
+            <CardHeader className="flex-shrink-0 p-4">
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
                         <HistoryIconLucide className="h-5 w-5" aria-hidden="true" />
@@ -82,7 +83,7 @@ export const HistoryList = React.memo(function HistoryListComponent({ items, onH
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="pt-2 flex-grow overflow-hidden">
+            <CardContent className="p-4 pt-2 flex-grow overflow-hidden">
                 {isLoading ? (
                     <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
                         <p className="text-sm text-muted-foreground">Loading history...</p>
@@ -94,7 +95,7 @@ export const HistoryList = React.memo(function HistoryListComponent({ items, onH
                     </p>
                 ) : (
                     <ScrollArea className="h-full">
-                        <ul className="space-y-1 pr-3"> 
+                        <ul className="space-y-1 pr-1"> {/* Adjusted pr-3 to pr-1 to gain bit of space if p-4 is outer */}
                             {items.map((item) => (
                                 <li key={item.id} className="flex items-center justify-between gap-1 group/history-item">
                                   <Button

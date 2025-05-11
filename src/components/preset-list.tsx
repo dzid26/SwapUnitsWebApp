@@ -18,13 +18,13 @@ export const PresetList = React.memo(function PresetListComponent({ onPresetSele
 
     return (
         <Card className={cn("shadow-lg hidden md:block w-full max-w-xs", className)} aria-label="Common Unit Conversion Presets">
-            <CardHeader>
+            <CardHeader className="p-4">
                 <CardTitle className="text-xl font-semibold text-primary flex items-center gap-2">
                     <List className="h-5 w-5" aria-hidden="true" />
                     Common Conversions
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0">
                 <ul className="space-y-2">
                     {displayPresets.map((preset, index) => (
                         <li key={`${preset.category}-${preset.name}-${index}`}>
