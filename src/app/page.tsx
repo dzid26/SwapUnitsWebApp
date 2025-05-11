@@ -175,7 +175,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <header className="bg-background p-3 border-b flex items-center justify-between shadow-sm relative">
+      <header className="sticky top-0 z-50 bg-background p-3 border-b flex items-center justify-between shadow-sm">
         <div className="flex items-center w-1/3"> 
           {isMobile && (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -335,5 +335,6 @@ export default function Home() {
     </>
   );
 }
+
 
 
