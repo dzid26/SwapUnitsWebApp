@@ -70,7 +70,7 @@ export interface UnitConverterHandle {
   applyHistorySelect: (item: ConversionHistoryItem) => void;
 }
 
-// Helper function to format numbers (moved from ConversionDisplay)
+// Helper function to format numbers
 const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
     formattedString: string;
     actualFormatUsed: NumberFormat;
@@ -90,7 +90,7 @@ const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
         actualFormatUsed = 'scientific';
         scientificReason = useScientificDueToMagnitude ? 'magnitude' : (requestedFormat === 'scientific' ? 'user_choice' : null);
         
-        let exponential = num.toExponential(7).replace('e', 'E');
+        let exponential = num.toExponential(5).replace('e', 'E'); // Changed from 7 to 5
         const match = exponential.match(/^(-?\d(?:\.\d*)?)(0*)(E[+-]\d+)$/);
         if (match) {
             let coefficient = match[1];
@@ -105,20 +105,20 @@ const formatNumber = (num: number, requestedFormat: NumberFormat = 'normal'): {
         }
     } else {
         actualFormatUsed = 'normal';
-        const numRoundedForCheck = parseFloat(num.toFixed(7));
+        const numRoundedForCheck = parseFloat(num.toFixed(5)); // Changed from 7 to 5
         if (numRoundedForCheck % 1 === 0) {
             formattedString = numRoundedForCheck.toLocaleString(undefined, { maximumFractionDigits: 0 });
         } else {
-            let fixedStr = num.toFixed(7);
+            let fixedStr = num.toFixed(5); // Changed from 7 to 5
             fixedStr = fixedStr.replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1');
-            formattedString = parseFloat(fixedStr).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 7});
+            formattedString = parseFloat(fixedStr).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 5}); // Changed from 7 to 5
         }
     }
 
     return { formattedString, actualFormatUsed, scientificReason };
 };
 
-// Helper function to format the "From" value input for display purposes if needed (moved from ConversionDisplay)
+// Helper function to format the "From" value input for display purposes
 const formatFromValue = (num: number | undefined): string => {
     if (num === undefined || !isFinite(num)) {
         return '-';
@@ -126,7 +126,7 @@ const formatFromValue = (num: number | undefined): string => {
     const useScientificDueToMagnitude = (Math.abs(num) > 1e9 || Math.abs(num) < 1e-7) && num !== 0;
 
     if (useScientificDueToMagnitude) {
-        let exponential = num.toExponential(7).replace('e', 'E');
+        let exponential = num.toExponential(5).replace('e', 'E'); // Changed from 7 to 5
         const match = exponential.match(/^(-?\d(?:\.\d*)?)(0*)(E[+-]\d+)$/);
         if (match) {
             let coefficient = match[1];
@@ -139,13 +139,13 @@ const formatFromValue = (num: number | undefined): string => {
         }
         return exponential;
     }
-    const numRoundedForCheck = parseFloat(num.toFixed(7));
+    const numRoundedForCheck = parseFloat(num.toFixed(5)); // Changed from 7 to 5
      if (numRoundedForCheck % 1 === 0) {
         return numRoundedForCheck.toLocaleString(undefined, { maximumFractionDigits: 0 });
     } else {
-        let fixedStr = num.toFixed(7);
+        let fixedStr = num.toFixed(5); // Changed from 7 to 5
         fixedStr = fixedStr.replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1');
-        return parseFloat(fixedStr).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 7});
+        return parseFloat(fixedStr).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 5}); // Changed from 7 to 5
     }
 };
 
@@ -428,15 +428,21 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         
         setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
         setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
-        setValue("value", valueToKeep, { shouldValidate: true, shouldDirty: true }); 
-        setLastValidInputValue(valueToKeep); 
+        // Do NOT set value for presets, keep existing value
+        // setValue("value", valueToKeep, { shouldValidate: true, shouldDirty: true }); 
+        // setLastValidInputValue(valueToKeep); 
 
         setNumberFormat('normal');
         setIsNormalFormatDisabled(false);
         
         Promise.resolve().then(() => {
             const updatedVals = getValues();
-            const result = convertUnits({...updatedVals, category: presetCategory});
+            // Ensure the kept value is used for conversion if it's valid, otherwise default to 1
+            const valueForConversion = (updatedVals.value !== undefined && String(updatedVals.value).trim() !== '' && !isNaN(Number(updatedVals.value)))
+                ? Number(updatedVals.value)
+                : 1;
+
+            const result = convertUnits({...updatedVals, category: presetCategory, value: valueForConversion });
             setConversionResult(result);
         });
     });
@@ -617,7 +623,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
             {screenReaderText}
           </div>
           <Form {...form}>
-            <form onSubmit={handleFormSubmit} className="flex-grow flex flex-col space-y-6">
+            <form onSubmit={handleFormSubmit} className="flex-grow flex flex-col space-y-4">
               <FormField
                 control={form.control}
                 name="category"
@@ -798,9 +804,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 </div>
               )}
               
-              <div className="flex-grow"></div> {/* Spacer to push content up */}
+              {/* Removed flex-grow div to bring result formatting closer */}
               
-              <fieldset className="pt-4">
+              <fieldset className=""> {/* Removed pt-4 */}
                 <Label className="mb-2 block font-medium text-sm">Result Formatting</Label>
                  <RadioGroup
                    value={numberFormat}
@@ -841,4 +847,3 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
-
