@@ -430,10 +430,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         
         const numericValueToKeep = Number(valueToKeep);
         if (isFinite(numericValueToKeep) && String(valueToKeep).trim() !== '') {
-             // Keep existing valid value
              setValue("value", numericValueToKeep, { shouldValidate: true, shouldDirty: true });
         } else {
-            // If current value is invalid or empty, set to 1 or keep last valid
             const newVal = lastValidInputValue !== undefined ? lastValidInputValue : 1;
             setValue("value", newVal, { shouldValidate: true, shouldDirty: true });
             setLastValidInputValue(newVal);
@@ -765,31 +763,19 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         <ArrowRightLeft className={cn("h-5 w-5 text-primary group-hover:text-accent-foreground", isSwapped && "rotate-180 scale-x-[-1]")} aria-hidden="true" />
                     </Button>
 
-                  {/* To Unit Section with Integrated Copy Button */}
+                  {/* To Unit Section with Integrated Copy Button and Favorite Button */}
                   <div className="flex items-stretch flex-grow-[2] basis-0">
-                    <FormItem className="flex-grow relative">
+                    <FormItem className="flex-grow">
                       <Input
                         readOnly
                         value={showPlaceholder ? (rhfValue === '' || rhfValue === '-' ? '-' : '...') : formattedResultString}
                         className={cn(
-                          "rounded-none border-l-0 border-r-0", 
+                          "rounded-l-md rounded-r-none border-r-0", 
                           "focus:z-10 relative h-10 text-left",
                           showPlaceholder ? "text-muted-foreground" : "text-purple-600 dark:text-purple-400 font-semibold"
                         )}
                         aria-label="Conversion result"
                       />
-                       {onSaveFavoriteProp && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={handleSaveToFavoritesInternal}
-                            disabled={finalSaveDisabled || showPlaceholder}
-                            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 h-7 w-7 group hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-                            aria-label="Save conversion to favorites"
-                        >
-                            <Star className={cn("h-4 w-4", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
-                        </Button>
-                        )}
                     </FormItem>
                     <Button 
                       type="button"
@@ -813,10 +799,9 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           >
                             <FormControl>
                                <SelectTrigger className={cn(
-                                 "rounded-l-none border-l-0",
+                                 "rounded-none border-l-0 border-r-0",
                                  "w-auto min-w-[70px] md:min-w-[90px] h-10 text-left focus:z-10"
                                 )}
-                                
                                >
                                 {(() => {
                                   const selectedUnitSymbol = field.value;
@@ -840,6 +825,19 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         </FormItem>
                       )}
                     />
+                     {onSaveFavoriteProp && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={handleSaveToFavoritesInternal}
+                            disabled={finalSaveDisabled || showPlaceholder}
+                            className="h-10 w-10 group shrink-0 rounded-l-none rounded-r-md border-l-0"
+                            aria-label="Save conversion to favorites"
+                        >
+                            <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
+                        </Button>
+                    )}
                   </div>
                   
                 </div>
