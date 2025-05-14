@@ -286,7 +286,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 case 'Mass': newFromUnitSymbol = 'kg'; newToUnitSymbol = 'g'; break;
                 case 'Temperature': newFromUnitSymbol = '°C'; newToUnitSymbol = '°F'; break;
                 case 'Time': newFromUnitSymbol = 's'; newToUnitSymbol = 'ms'; break;
-                case 'Pressure': newFromUnitSymbol = 'Pa'; newToUnitSymbol = 'kPa'; break;
+                case 'Pressure': newFromUnitSymbol = 'Pa'; newToUnitSymbol = 'atm'; break;
                 case 'Area': newFromUnitSymbol = 'm²'; newToUnitSymbol = 'ft²'; break;
                 case 'Volume': newFromUnitSymbol = 'L'; newToUnitSymbol = 'mL'; break;
                 case 'Energy': newFromUnitSymbol = 'J'; newToUnitSymbol = 'kJ'; break;
@@ -409,7 +409,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
     const presetCategory = Object.keys(unitData).find(catKey => catKey === preset.category) as UnitCategory | undefined;
     if (!presetCategory) return;
 
-    const valueToKeep = getValues("value");
+    // Do not change the value when a preset is selected
+    // const valueToKeep = getValues("value"); 
 
     setValue("category", presetCategory, { shouldValidate: true, shouldDirty: true });
     
@@ -428,21 +429,21 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
         setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
         
-        const numericValueToKeep = Number(valueToKeep);
-        if (isFinite(numericValueToKeep) && String(valueToKeep).trim() !== '') {
-             // setValue("value", numericValueToKeep, { shouldValidate: false, shouldDirty: false }); 
-        } else {
-            const newVal = lastValidInputValue !== undefined ? lastValidInputValue : 1;
-            // setValue("value", newVal, { shouldValidate: false, shouldDirty: false }); 
-        }
+        // const numericValueToKeep = Number(valueToKeep);
+        // if (isFinite(numericValueToKeep) && String(valueToKeep).trim() !== '') {
+        //      // setValue("value", numericValueToKeep, { shouldValidate: false, shouldDirty: false }); 
+        // } else {
+        //     const newVal = lastValidInputValue !== undefined ? lastValidInputValue : 1;
+        //     // setValue("value", newVal, { shouldValidate: false, shouldDirty: false }); 
+        // }
         
         Promise.resolve().then(() => {
-            const currentVals = getValues();
-            const result = convertUnits({...currentVals, category: presetCategory });
+            const currentVals = getValues(); // Get potentially updated value from form state
+            const result = convertUnits({...currentVals, category: presetCategory }); // Use current value
             setConversionResult(result);
         });
     });
-  }, [setValue, getValues, convertUnits, lastValidInputValue]);
+  }, [setValue, getValues, convertUnits /* removed lastValidInputValue */]);
 
 
   const internalApplyHistorySelect = React.useCallback((item: ConversionHistoryItem) => {
@@ -587,7 +588,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
       toast({
         title: "Favorite Saved!",
         description: `"${favoriteName}" added to your favorites.`,
-        variant: "success", // Using success variant which is orange
+        variant: "success", 
         duration: 2000,
       });
     }
@@ -724,7 +725,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           >
                             <FormControl>
                               <SelectTrigger 
-                                className={cn("rounded-l-none w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:outline-none")}
+                                className={cn("rounded-l-none w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input")}
                               >
                                 {(() => {
                                   const selectedUnitSymbol = field.value;
@@ -771,7 +772,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             variant="outline"
                             onClick={handleSaveToFavoritesInternal}
                             disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-auto min-w-[80px] group shrink-0 hover:border-accent focus-visible:ring-accent p-2"
+                            className="h-10 w-auto min-w-[80px] flex-shrink-0 group hover:border-accent focus-visible:ring-accent p-2 hover:bg-background"
                             aria-label="Save conversion to favorites"
                         >
                             <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
@@ -832,7 +833,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                                  "rounded-l-none",
                                  !isMobile && !onSaveFavoriteProp && "rounded-r-md", 
                                  !isMobile && onSaveFavoriteProp && "rounded-r-none border-l-0 border-r-0", 
-                                 "w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:z-10 focus:outline-none"
+                                 "w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input"
                                 )}
                                >
                                 {(() => {
@@ -864,7 +865,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             size="icon"
                             onClick={handleSaveToFavoritesInternal}
                             disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-10 group shrink-0 rounded-l-none rounded-r-md border-l-0 hover:border-accent focus-visible:ring-accent"
+                            className="h-10 w-10 group shrink-0 rounded-l-none rounded-r-md border-l-0 hover:border-accent focus-visible:ring-accent hover:bg-background"
                             aria-label="Save conversion to favorites"
                         >
                             <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
@@ -915,3 +916,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
