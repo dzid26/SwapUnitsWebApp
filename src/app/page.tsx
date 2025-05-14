@@ -29,16 +29,12 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import SimpleCalculator from '@/components/simple-calculator';
+// Removed Dialog imports related to calculator from here
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X, Calculator } from 'lucide-react';
+import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X } from 'lucide-react'; // Removed Calculator icon import
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+// Removed SimpleCalculator import from here
 
 
 const jsonLd = {
@@ -68,7 +64,7 @@ export default function Home() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-  const [isCalculatorOpen, setIsCalculatorOpen] = React.useState(false);
+  // Removed isCalculatorOpen state from here
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
   const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); 
@@ -374,16 +370,7 @@ export default function Home() {
         </div>
 
         <div className="flex items-center justify-end w-1/3 gap-2">
-           <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Open calculator">
-                <Calculator className="h-5 w-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-xs p-0 bg-transparent border-0 shadow-none">
-              <SimpleCalculator />
-            </DialogContent>
-          </Dialog>
+           {/* Calculator DialogTrigger and Dialog removed from here */}
           <BookmarkButton />
         </div>
       </header>

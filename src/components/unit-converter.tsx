@@ -29,6 +29,7 @@ import {
   FlaskConical,
   Copy,
   Star,
+  Calculator, // Added Calculator icon import
 } from 'lucide-react';
 
 import { UnitIcon } from './unit-icon';
@@ -39,6 +40,13 @@ import { cn } from '@/lib/utils';
 import { useImperativeHandle, forwardRef } from 'react';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/ui/dialog'; // Added Dialog imports
+import SimpleCalculator from '@/components/simple-calculator'; // Added SimpleCalculator import
+
 
 const formSchema = z.object({
   category: z.string().min(1, "Please select a category"),
@@ -157,6 +165,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   const [isNormalFormatDisabled, setIsNormalFormatDisabled] = React.useState<boolean>(false);
   const isMobile = useIsMobile();
   const [isSwapped, setIsSwapped] = React.useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = React.useState(false); // Added calculator state
   const { toast } = useToast();
 
 
@@ -663,7 +672,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                   "w-full",
                   isMobile ? "flex flex-col gap-2" : "flex flex-row items-end gap-2"
                 )}>
-                  {/* From Input Row (Value + FromUnit) */}
+                  {/* From Input Row (Value + Calculator + FromUnit) */}
                   <div className={cn("flex items-stretch", isMobile ? "w-full" : "flex-grow-[2] basis-0")}>
                     <FormField
                       control={form.control}
@@ -702,6 +711,22 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         </FormItem>
                       )}
                     />
+                    <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
+                        <DialogTrigger asChild>
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                size="icon" 
+                                className="p-2 h-10 w-10 rounded-none border-l-0 border-r-0 hover:bg-muted/50 focus:z-10 shrink-0"
+                                aria-label="Open calculator"
+                            >
+                                <Calculator className="h-5 w-5" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-xs p-0 bg-transparent border-0 shadow-none">
+                            <SimpleCalculator />
+                        </DialogContent>
+                    </Dialog>
                     <FormField
                       control={form.control}
                       name="fromUnit"
@@ -905,4 +930,3 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
-
