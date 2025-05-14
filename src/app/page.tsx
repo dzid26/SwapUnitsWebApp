@@ -29,8 +29,14 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import SimpleCalculator from '@/components/simple-calculator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X } from 'lucide-react';
+import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
@@ -47,13 +53,13 @@ const jsonLd = {
     'Unit Conversion', 'Length Conversion', 'Mass Conversion', 'Temperature Conversion', 'Time Conversion', 
     'Pressure Conversion', 'Area Conversion', 'Volume Conversion', 'Energy Conversion', 'Speed Conversion', 
     'Fuel Economy Conversion', 'Data Storage Conversion', 'Data Transfer Rate Conversion', 
-    'Bitcoin Conversion', 'Ethereum Conversion', 'EM Frequency Conversion', 'Sound Frequency Conversion',
+    'Bitcoin Conversion', 
     'Metric Units', 'Imperial Units', 'Scientific Notation Option',
     'Common Conversion Presets', 'Save Favorite Conversions', 'Copy to Clipboard', 'Responsive Design', 
-    'Conversion History'
+    'Conversion History', 'Simple Calculator'
   ],
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, ethereum, gwei, wei, frequency, wavelength, Hz, THz, nm, km, metric, imperial, scientific notation, presets, history, favorites, atm, Pa, psi", 
+  keywords: "unit converter, measurement converter, convert units, online converter, free tool, calculator, length, mass, temperature, time, pressure, area, volume, energy, speed, fuel economy, data storage, data transfer, bitcoin, satoshi, metric, imperial, scientific notation, presets, history, favorites, atm, Pa, psi", 
 };
 
 const MAX_FAVORITES_FOR_BUTTON_DISABLE = 5;
@@ -62,6 +68,7 @@ export default function Home() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = React.useState(false);
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
   const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); 
@@ -295,7 +302,6 @@ export default function Home() {
                                             <UnitIcon category={fav.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium break-words">{fav.name}</p>
-                                                {/* Removed category display from favorites */}
                                             </div>
                                         </Button>
                                     </SheetClose>
@@ -368,6 +374,16 @@ export default function Home() {
         </div>
 
         <div className="flex items-center justify-end w-1/3 gap-2">
+           <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Open calculator">
+                <Calculator className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-xs p-0 bg-transparent border-0 shadow-none">
+              <SimpleCalculator />
+            </DialogContent>
+          </Dialog>
           <BookmarkButton />
         </div>
       </header>
@@ -423,5 +439,3 @@ export default function Home() {
     </>
   );
 }
-
-    
