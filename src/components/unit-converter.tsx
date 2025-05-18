@@ -636,12 +636,12 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
              <li><span className="font-semibold text-primary">View Result:</span> The converted value appears automatically.</li>
            </ol>
         </CardHeader>
-        <CardContent className={cn("pt-0 flex-grow flex flex-col justify-between")}> {/* Ensure CardContent fills space and justifies content */}
+        <CardContent className={cn("pt-0 flex-grow flex flex-col justify-between")}>
           <div aria-live="polite" aria-atomic="true" className="sr-only">
             {screenReaderText}
           </div>
           <Form {...form}>
-            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4"> {/* Removed flex-grow here */}
+            <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4 flex-grow">
               <FormField
                 control={form.control}
                 name="category"
@@ -681,7 +681,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
               />
 
               {rhfCategory && (
-                <div className={cn("w-full flex flex-col gap-2")}>
+                <div className="flex flex-col gap-4"> 
                   {/* From Input Row */}
                   <div className={cn("flex items-stretch w-full")}>
                     <FormField
@@ -734,7 +734,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             </Button>
                         </DialogTrigger>
                          <DialogContent className="sm:max-w-xs p-0 bg-transparent border-0 shadow-none">
-                           <DialogHeader className="sr-only">
+                           <DialogHeader className="sr-only"> {/* Visually hidden title for accessibility */}
                              <DialogTitle>Calculator</DialogTitle>
                            </DialogHeader>
                            <SimpleCalculator onSendValue={handleCalculatorValueSent} />
@@ -778,16 +778,15 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     />
                   </div>
 
-                  {/* Middle Row */}
-                   <div className={cn("flex items-stretch w-full gap-2")}>
+                  {/* Middle Row - Now flex-col on all screens for consistency */}
+                   <div className="flex flex-col sm:flex-row w-full gap-2">
                       <Button 
                         type="button"
                         variant="ghost"
                         onClick={handleSwapClick}
                         disabled={!rhfFromUnit || !rhfToUnit}
                         className={cn(
-                          "h-10 group hover:bg-primary flex-grow p-2",
-                          "w-full" 
+                          "h-10 group hover:bg-primary flex-grow p-2 w-full" 
                         )}
                         aria-label="Swap from and to units"
                       >
@@ -799,7 +798,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             variant="outline"
                             onClick={handleSaveToFavoritesInternal}
                             disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-10 sm:w-auto sm:min-w-[80px] md:min-w-[100px] flex-shrink-0 group hover:border-accent hover:bg-background focus-visible:ring-accent p-2"
+                            className="h-10 w-full sm:w-auto sm:min-w-[80px] md:min-w-[100px] flex-shrink-0 group hover:border-accent hover:bg-background focus-visible:ring-accent p-2"
                             aria-label="Save conversion to favorites"
                         >
                             <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
@@ -871,7 +870,16 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                 </div>
               )}
               
-              <fieldset className="pt-4"> {/* Removed mt-auto here */}
+              {/* Textual Conversion Result Display */}
+              {!showPlaceholder && conversionResult && rhfCategory && rhfFromUnit && rhfToUnit && (
+                <div className="text-center py-2">
+                  <p className="text-purple-600 dark:text-purple-400 font-semibold text-lg">
+                    {`${formatFromValue(Number(rhfValue))} ${rhfFromUnit} equals ${formattedResultString} ${rhfToUnit}`}
+                  </p>
+                </div>
+              )}
+
+              <fieldset className="pt-4"> 
                  <Label className="mb-2 block font-medium text-sm">Result Formatting</Label>
                  <RadioGroup
                    value={numberFormat}
@@ -904,6 +912,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                    </div>
                  </RadioGroup>
               </fieldset>
+              <div className="flex-grow"></div> {/* This will push the fieldset to the bottom if needed */}
             </form>
           </Form>
         </CardContent>
