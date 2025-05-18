@@ -196,7 +196,7 @@ export default function Home() {
       />
 
       <header className="sticky top-0 z-50 bg-background p-3 border-b flex items-center justify-between shadow-sm">
-        <div className="flex items-center w-1/3"> 
+        <div className="flex items-center w-1/3 md:hidden"> {/* Added md:hidden here */}
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -361,6 +361,8 @@ export default function Home() {
               </SheetContent>
             </Sheet>
         </div>
+        <div className="hidden md:flex items-center w-1/3"></div> {/* Placeholder for desktop layout balance */}
+
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <Link
@@ -384,22 +386,22 @@ export default function Home() {
 
       <div className={cn(
         "flex-grow grid grid-cols-1 md:grid-cols-[minmax(250px,300px)_1fr_minmax(250px,300px)] xl:grid-cols-[minmax(300px,350px)_1fr_minmax(300px,350px)] 2xl:grid-cols-[minmax(350px,400px)_1fr_minmax(350px,400px)]",
-        "gap-4 md:gap-6 lg:gap-8 w-full max-w-screen-2xl mx-auto items-stretch", // Use items-stretch if cards are h-full
+        "gap-4 md:gap-6 lg:gap-8 w-full max-w-screen-2xl mx-auto items-stretch", 
         "pt-2 pb-4 px-4",
         "sm:pt-4 sm:pb-8 sm:px-8",
-        "md:pt-6 md:pb-12 md:px-6", // Adjusted md padding
-        "lg:pt-8 lg:pb-16 lg:px-8", // Adjusted lg padding
-        "xl:pt-10 xl:pb-20 xl:px-10", // Adjusted xl padding
-        "2xl:pt-12 2xl:pb-24 2xl:px-12" // Adjusted 2xl padding
+        "md:pt-6 md:pb-12 md:px-6", 
+        "lg:pt-8 lg:pb-16 lg:px-8", 
+        "xl:pt-10 xl:pb-20 xl:px-10", 
+        "2xl:pt-12 2xl:pb-24 2xl:px-12" 
       )}>
         <HistoryList
             items={history}
             onHistorySelect={onDesktopHistoryItemSelect}
             onClearHistory={clearHistory}
-            className="hidden md:flex md:flex-col h-full" // max-h-[calc(100vh-120px)] or similar if independent scrolling is needed
+            className="hidden md:flex md:flex-col h-full" 
             isLoading={isLoadingHistory}
         />
-        <main className="flex flex-col items-center w-full md:min-w-[400px] lg:min-w-[500px]" role="main"> {/* Ensure main content has some min-width */}
+        <main className="flex flex-col items-center w-full md:min-w-[400px] lg:min-w-[500px]" role="main"> 
           <Toaster />
           <UnitConverter 
             ref={unitConverterRef} 
@@ -413,10 +415,10 @@ export default function Home() {
             presetsToDisplay={displayPresetsForListDesktop}
             onPresetSelect={onDesktopPresetSelect}
             favorites={favorites}
-            onFavoriteSelect={onDesktopPresetSelect} // Assuming same handler logic for favorites
+            onFavoriteSelect={onDesktopPresetSelect} 
             onRemoveFavorite={removeFavorite}
             onClearAllFavorites={clearAllFavorites}
-            className="hidden md:flex md:flex-col h-full" // max-h-[calc(100vh-120px)] or similar for scrolling
+            className="hidden md:flex md:flex-col h-full" 
             isLoadingFavorites={isLoadingFavorites}
         />
       </div>
@@ -425,3 +427,4 @@ export default function Home() {
     </>
   );
 }
+
