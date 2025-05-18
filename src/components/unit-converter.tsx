@@ -42,9 +42,9 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog'; 
 import SimpleCalculator from '@/components/simple-calculator'; 
 
@@ -164,7 +164,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
   const [lastValidInputValue, setLastValidInputValue] = React.useState<number | undefined>(1);
   const [numberFormat, setNumberFormat] = React.useState<NumberFormat>('normal');
   const [isNormalFormatDisabled, setIsNormalFormatDisabled] = React.useState<boolean>(false);
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(); // Still useful for minor UI tweaks if needed
   const [isSwapped, setIsSwapped] = React.useState(false);
   const [isCalculatorOpen, setIsCalculatorOpen] = React.useState(false); 
   const { toast } = useToast();
@@ -436,13 +436,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
         setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
         setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
                 
-        // Do NOT set the value field here, keep existing value.
-        // setLastValidInputValue(1); // Do not reset input value
-        // setNumberFormat('normal'); // Do not reset number format
-        // setIsNormalFormatDisabled(false);
-        
         Promise.resolve().then(() => {
-            const currentVals = getValues(); // This will have the new units but old value
+            const currentVals = getValues(); 
             const result = convertUnits({...currentVals, category: presetCategory }); 
             setConversionResult(result);
         });
@@ -685,12 +680,10 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
               />
 
               {rhfCategory && (
-                <div className={cn(
-                  "w-full",
-                  isMobile ? "flex flex-col gap-2" : "flex flex-row items-end gap-2"
-                )}>
-                  {/* From Input Row (Value + Calculator + FromUnit) */}
-                  <div className={cn("flex items-stretch", isMobile ? "w-full" : "flex-grow-[2] basis-0")}>
+                // This main div will now always be flex-col
+                <div className={cn("w-full flex flex-col gap-2")}>
+                  {/* From Input Row (Value + Calculator + FromUnit) - Always w-full */}
+                  <div className={cn("flex items-stretch w-full")}>
                     <FormField
                       control={form.control}
                       name="value"
@@ -741,7 +734,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-xs p-0 bg-transparent border-0 shadow-none">
-                           <DialogHeader className="sr-only">
+                           <DialogHeader className="sr-only"> {/* Visually hidden, for accessibility */}
                              <DialogTitle>Calculator</DialogTitle>
                            </DialogHeader>
                            <SimpleCalculator onSendValue={handleCalculatorValueSent} />
@@ -785,51 +778,36 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     />
                   </div>
 
-                  {/* Middle Row (Swap + Favorite on Mobile, Just Swap on Desktop) */}
-                  {isMobile ? (
-                    <div className="flex items-stretch w-full gap-2">
-                      <Button 
-                        type="button"
-                        variant="ghost"
-                        onClick={handleSwapClick}
-                        disabled={!rhfFromUnit || !rhfToUnit}
-                        className={cn(
-                          "h-10 group hover:bg-primary flex-grow p-2",
-                        )}
-                        aria-label="Swap from and to units"
-                      >
-                        <ArrowRightLeft className={cn("h-5 w-5 text-primary group-hover:text-primary-foreground", isSwapped && "transform rotate-180 scale-x-[-1]")} aria-hidden="true" />
-                      </Button>
-                      {onSaveFavoriteProp && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleSaveToFavoritesInternal}
-                            disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-auto min-w-[80px] flex-shrink-0 group hover:border-accent hover:bg-background focus-visible:ring-accent p-2"
-                            aria-label="Save conversion to favorites"
-                        >
-                            <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    <Button
+                  {/* Middle Row (Swap + Favorite) - Always this structure */}
+                  <div className="flex items-stretch w-full gap-2">
+                    <Button 
                       type="button"
                       variant="ghost"
                       onClick={handleSwapClick}
                       disabled={!rhfFromUnit || !rhfToUnit}
                       className={cn(
-                          "h-10 w-10 p-2 self-end group hover:bg-primary shrink-0",
+                        "h-10 group hover:bg-primary flex-grow p-2", // Using mobile classes for consistency
                       )}
                       aria-label="Swap from and to units"
-                      >
+                    >
                       <ArrowRightLeft className={cn("h-5 w-5 text-primary group-hover:text-primary-foreground", isSwapped && "transform rotate-180 scale-x-[-1]")} aria-hidden="true" />
                     </Button>
-                  )}
-
-                  {/* To Result Row (Result + Copy + ToUnit + Desktop Favorite) */}
-                  <div className={cn("flex items-stretch", isMobile ? "w-full" : "flex-grow-[2] basis-0")}>
+                    {onSaveFavoriteProp && (
+                      <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleSaveToFavoritesInternal}
+                          disabled={finalSaveDisabled || showPlaceholder}
+                          className="h-10 w-auto min-w-[80px] flex-shrink-0 group hover:border-accent hover:bg-background focus-visible:ring-accent p-2"
+                          aria-label="Save conversion to favorites"
+                      >
+                          <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* To Result Row (Result + Copy + ToUnit) - Always w-full */}
+                  <div className={cn("flex items-stretch w-full")}>
                     <FormItem className="flex-grow">
                       <Input
                         readOnly
@@ -864,9 +842,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                           >
                             <FormControl>
                                <SelectTrigger className={cn(
-                                 "rounded-l-none",
-                                 !isMobile && !onSaveFavoriteProp && "rounded-r-md", 
-                                 !isMobile && onSaveFavoriteProp && "rounded-r-none border-l-0 border-r-0", 
+                                 "rounded-l-none rounded-r-md", // Always rounded-r-md as fav button is now separate
                                  "w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input"
                                 )}
                                >
@@ -892,19 +868,6 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         </FormItem>
                       )}
                     />
-                     {!isMobile && onSaveFavoriteProp && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={handleSaveToFavoritesInternal}
-                            disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-10 group shrink-0 rounded-l-none rounded-r-md border-l-0 hover:border-accent hover:bg-background focus-visible:ring-accent"
-                            aria-label="Save conversion to favorites"
-                        >
-                            <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
-                        </Button>
-                    )}
                   </div>
                 </div>
               )}

@@ -13,7 +13,7 @@ import { Footer } from "@/components/footer";
 import { PresetList } from "@/components/preset-list"; 
 import { HistoryList } from "@/components/history-list";
 import { UnitIcon } from '@/components/unit-icon'; 
-import { unitData, getFilteredAndSortedPresets, getUnitsForCategoryAndMode } from '@/lib/unit-data'; 
+import { unitData, getFilteredAndSortedPresets } from '@/lib/unit-data'; 
 import type { Preset, UnitCategory, ConversionHistoryItem, FavoriteItem } from '@/types';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,12 +29,11 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-// Removed Dialog imports related to calculator from here
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X } from 'lucide-react'; // Removed Calculator icon import
+import { Menu, RefreshCw, List, History as HistoryIconLucide, Copy, Star, X, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-// Removed SimpleCalculator import from here
+import SimpleCalculator from '@/components/simple-calculator'; 
 
 
 const jsonLd = {
@@ -64,7 +63,6 @@ export default function Home() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-  // Removed isCalculatorOpen state from here
   const unitConverterRef = React.useRef<UnitConverterHandle>(null);
   const { history, addHistoryItem, clearHistory, isLoading: isLoadingHistory } = useConversionHistory();
   const { favorites, addFavorite, removeFavorite, clearAllFavorites, isLoadingFavorites } = useFavorites(); 
@@ -87,25 +85,17 @@ export default function Home() {
 
   const onHistoryItemSelect = React.useCallback((item: ConversionHistoryItem) => {
     if (unitConverterRef.current) {
-      if (unitConverterRef.current) {
-        unitConverterRef.current.applyHistorySelect(item);
-      }
+      unitConverterRef.current.applyHistorySelect(item);
     }
-    if (isMobile) setIsSheetOpen(false);
-  }, [isMobile]);
+    setIsSheetOpen(false); // Close sheet on mobile and desktop after selection
+  }, []);
 
 
   const onMobilePresetSelect = (preset: Preset | FavoriteItem) => { 
     if (unitConverterRef.current) {
         unitConverterRef.current.handlePresetSelect(preset);
     }
-    setIsSheetOpen(false); 
-  };
-
-  const handlePresetSelectFromDesktop = (preset: Preset | FavoriteItem) => { 
-    if (unitConverterRef.current) {
-        unitConverterRef.current.handlePresetSelect(preset);
-    }
+    setIsSheetOpen(false); // Close sheet on mobile and desktop after selection
   };
   
   const handleSaveFavorite = React.useCallback((favoriteData: Omit<FavoriteItem, 'id'>) => {
@@ -192,7 +182,7 @@ export default function Home() {
 
       <header className="sticky top-0 z-50 bg-background p-3 border-b flex items-center justify-between shadow-sm">
         <div className="flex items-center w-1/3"> 
-          {isMobile && (
+          {/* Menu button always visible, controls sheet for all screen sizes */}
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -208,7 +198,7 @@ export default function Home() {
                     </SheetTitle>
                   </SheetHeader>
 
-                  {/* History Section in Mobile Sheet */}
+                  {/* History Section in Sheet */}
                   <div className="p-4 border-b">
                     <div className="flex justify-between items-center mb-3">
                       <h3 className="text-md font-semibold text-foreground flex items-center gap-2">
@@ -223,7 +213,9 @@ export default function Home() {
                         </SheetClose>
                       )}
                     </div>
-                    {history.length === 0 ? (
+                    {isLoadingHistory ? (
+                       <p className="text-sm text-muted-foreground">Loading history...</p>
+                    ) : history.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No history yet.</p>
                     ) : (
                       <ul className="space-y-1"> 
@@ -239,7 +231,7 @@ export default function Home() {
                                   <UnitIcon category={item.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
                                    <div className="flex-1 min-w-0">
                                       <p className="font-medium break-words"> 
-                                          {formatHistoryNumberMobile(item.fromValue)} {item.fromUnit} → {formatHistoryNumberMobile(item.toValue)} {item.toUnit}
+                                          {formatHistoryNumberMobile(item.fromValue)} ${item.fromUnit} → ${formatHistoryNumberMobile(item.toValue)} ${item.toUnit}
                                       </p>
                                       <p className="text-xs text-muted-foreground break-words"> 
                                           {item.category} - {format(new Date(item.timestamp), 'MMM d, p')}
@@ -267,7 +259,7 @@ export default function Home() {
                   
                   <Separator className="my-0" />
                    
-                   {/* My Favorites Section in Mobile Sheet */}
+                  {/* My Favorites Section in Sheet */}
                   <div className="p-4 border-b">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="text-md font-semibold text-accent flex items-center gap-2">
@@ -282,7 +274,9 @@ export default function Home() {
                             </SheetClose>
                         )}
                     </div>
-                    {favorites.length === 0 ? (
+                     {isLoadingFavorites ? (
+                       <p className="text-sm text-muted-foreground">Loading favorites...</p>
+                    ) : favorites.length === 0 ? (
                         <p className="text-sm text-muted-foreground">No favorites yet.</p>
                     ) : (
                         <ul className="space-y-1">
@@ -321,6 +315,7 @@ export default function Home() {
                   
                   <Separator className="my-0" />
 
+                  {/* Common Conversions Section in Sheet */}
                   <div className="p-4">
                     <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
                         <List className="h-4 w-4" aria-hidden="true" />
@@ -351,7 +346,6 @@ export default function Home() {
                 </ScrollArea>
               </SheetContent>
             </Sheet>
-          )}
         </div>
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -370,11 +364,11 @@ export default function Home() {
         </div>
 
         <div className="flex items-center justify-end w-1/3 gap-2">
-           {/* Calculator DialogTrigger and Dialog removed from here */}
           <BookmarkButton />
         </div>
       </header>
 
+      {/* Simplified main content grid - single column for all screen sizes */}
       <div className={cn(
         "flex-grow grid grid-cols-1 w-full max-w-7xl mx-auto items-stretch",
         "2xl:max-w-screen-2xl", 
@@ -383,20 +377,8 @@ export default function Home() {
         "md:pt-6 md:pb-12 md:px-12",
         "lg:pt-8 lg:pb-16 lg:px-16",
         "xl:pt-10 xl:pb-20 xl:px-20",
-        "2xl:pt-12 2xl:pb-24 2xl:px-24", 
-         !isMobile && "md:grid-cols-[minmax(0,20rem)_1fr_minmax(0,20rem)] md:gap-8"
+        "2xl:pt-12 2xl:pb-24 2xl:px-24"
       )}>
-        {!isMobile && (
-          <aside className="hidden md:block w-full max-w-xs" role="complementary">
-            <HistoryList 
-                items={history} 
-                onHistorySelect={onHistoryItemSelect} 
-                onClearHistory={clearHistory} 
-                className="h-full"
-                isLoading={isLoadingHistory}
-            />
-          </aside>
-        )}
         <main className="flex flex-col items-center w-full" role="main">
           <Toaster />
           <UnitConverter 
@@ -407,22 +389,18 @@ export default function Home() {
             disableAddFavoriteButton={disableAddFavoriteButton} 
           />
         </main>
-        {!isMobile && (
-          <aside className="hidden md:block w-full max-w-xs" role="complementary">
-            <PresetList 
-                presetsToDisplay={displayPresetsForList}
-                onPresetSelect={handlePresetSelectFromDesktop} 
-                favorites={favorites}
-                onFavoriteSelect={handlePresetSelectFromDesktop} 
-                onRemoveFavorite={removeFavorite}
-                onClearAllFavorites={clearAllFavorites}
-                isLoadingFavorites={isLoadingFavorites}
-                className="h-full"
-            />
-          </aside>
-        )}
       </div>
+      
+      {/* Ad Placeholder now outside the grid, in the main flow */}
+      {/* Removed AdPlaceholder to fix module not found error */}
+      {/*
+      <div className="w-full my-4 flex justify-center px-4">
+        <AdPlaceholder />
+      </div>
+      */}
+
       <Footer />
     </>
   );
 }
+
