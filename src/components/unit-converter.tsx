@@ -41,7 +41,6 @@ import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
-  DialogClose, // Keep DialogClose for the Send button
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -436,11 +435,15 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
         setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
         setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
+        // Do not change value from preset, keep current or last valid
+        const currentVal = getValues("value");
+        const valToSet = (currentVal === '' || currentVal === undefined || isNaN(Number(currentVal))) ? lastValidInputValue : Number(currentVal);
+        setValue("value", valToSet, { shouldValidate: true, shouldDirty: true });
+
 
         Promise.resolve().then(() => {
             const currentVals = getValues();
-            const valueToUse = (currentVals.value === '' || currentVals.value === undefined || isNaN(Number(currentVals.value))) ? lastValidInputValue : Number(currentVals.value);
-            const result = convertUnits({...currentVals, value: valueToUse, category: presetCategory, fromUnit: finalFromUnit, toUnit: finalToUnit });
+            const result = convertUnits({...currentVals, category: presetCategory, fromUnit: finalFromUnit, toUnit: finalToUnit });
             setConversionResult(result);
         });
     });
@@ -499,15 +502,15 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
  const handleSwapClick = React.useCallback(() => {
     const currentFromUnit = getValues("fromUnit");
     const currentToUnit = getValues("toUnit");
-    const currentInputValue = getValues("value"); 
-
+    const currentInputValueString = String(getValues("value"));
     let newInputValue: number | undefined = undefined;
+
     if (conversionResult && isFinite(conversionResult.value)) {
-      newInputValue = conversionResult.value;
-    } else if (typeof currentInputValue === 'number' && isFinite(currentInputValue)) {
-      newInputValue = currentInputValue; 
+        newInputValue = conversionResult.value;
+    } else if (currentInputValueString.trim() !== '' && !isNaN(Number(currentInputValueString))) {
+        newInputValue = Number(currentInputValueString);
     } else {
-      newInputValue = lastValidInputValue; 
+        newInputValue = lastValidInputValue;
     }
     
     setValue("value", newInputValue, { shouldValidate: true, shouldDirty: true });
@@ -790,7 +793,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                                   type="button"
                                   variant="outline"
                                   size="icon"
-                                  className="p-2 h-10 w-10 rounded-none border-l-0 border-r-0 hover:bg-accent hover:text-foreground focus:z-10 shrink-0"
+                                  className="p-2 h-10 w-10 rounded-none border-l-0 border-r-0 hover:bg-accent hover:text-accent-foreground focus:z-10 shrink-0"
                                   aria-label="Open calculator"
                               >
                                   <Calculator className="h-5 w-5" />
@@ -888,7 +891,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         variant="outline"
                         onClick={handleCopy}
                         disabled={showPlaceholder}
-                        className="p-2 h-10 w-10 rounded-none border-l-0 border-r-0 hover:bg-accent hover:text-foreground focus:z-10 shrink-0"
+                        className="p-2 h-10 w-10 rounded-none border-l-0 border-r-0 hover:bg-accent hover:text-accent-foreground focus:z-10 shrink-0"
                         aria-label="Copy result to clipboard"
                       >
                         <Copy className="h-5 w-5" />
@@ -938,7 +941,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                  {/* Textual Conversion Result Display */}
                  {!showPlaceholder && conversionResult && rhfCategory && rhfFromUnit && rhfToUnit && (
                   <div className="relative text-center py-2">
-                    <div className="flex items-center justify-center bg-sky-100 dark:bg-sky-700 text-purple-600 dark:text-purple-400 font-semibold text-lg p-3 rounded-md border-2 border-blue-400 dark:border-blue-600">
+                    <div className="flex items-center justify-center bg-sky-100 dark:bg-sky-700 text-purple-600 dark:text-purple-400 font-semibold text-lg p-3 rounded-md border border-blue-400 dark:border-blue-600">
                         <span className="flex-grow text-center">
                             {`${formatFromValue(Number(rhfValue))} ${rhfFromUnit} = ${formattedResultString} ${rhfToUnit}`}
                         </span>
@@ -1000,3 +1003,4 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 }));
 
 UnitConverter.displayName = 'UnitConverter';
+
