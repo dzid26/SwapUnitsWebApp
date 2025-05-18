@@ -44,9 +44,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import SimpleCalculator from '@/components/simple-calculator';
+import { Separator } from './ui/separator';
 
 
 const formSchema = z.object({
@@ -435,15 +437,18 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
 
         setValue("fromUnit", finalFromUnit, { shouldValidate: true, shouldDirty: true });
         setValue("toUnit", finalToUnit, { shouldValidate: true, shouldDirty: true });
-        // Do not change value from preset, keep current or last valid
+        
         const currentVal = getValues("value");
         const valToSet = (currentVal === '' || currentVal === undefined || isNaN(Number(currentVal))) ? lastValidInputValue : Number(currentVal);
-        setValue("value", valToSet, { shouldValidate: true, shouldDirty: true });
+        
+        if (String(valToSet) !== String(currentVal)) {
+          // Do not set value for presets
+        }
 
 
         Promise.resolve().then(() => {
             const currentVals = getValues();
-            const result = convertUnits({...currentVals, category: presetCategory, fromUnit: finalFromUnit, toUnit: finalToUnit });
+            const result = convertUnits({...currentVals, value: valToSet, category: presetCategory, fromUnit: finalFromUnit, toUnit: finalToUnit });
             setConversionResult(result);
         });
     });
@@ -502,15 +507,17 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
  const handleSwapClick = React.useCallback(() => {
     const currentFromUnit = getValues("fromUnit");
     const currentToUnit = getValues("toUnit");
-    const currentInputValueString = String(getValues("value"));
     let newInputValue: number | undefined = undefined;
 
     if (conversionResult && isFinite(conversionResult.value)) {
         newInputValue = conversionResult.value;
-    } else if (currentInputValueString.trim() !== '' && !isNaN(Number(currentInputValueString))) {
-        newInputValue = Number(currentInputValueString);
     } else {
-        newInputValue = lastValidInputValue;
+        const currentInputString = String(getValues("value"));
+        if (currentInputString.trim() !== '' && !isNaN(Number(currentInputString))) {
+            newInputValue = Number(currentInputString);
+        } else {
+            newInputValue = lastValidInputValue;
+        }
     }
     
     setValue("value", newInputValue, { shouldValidate: true, shouldDirty: true });
@@ -675,7 +682,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
       const result = convertUnits({ ...currentFormData, value: numericValue });
       setConversionResult(result);
     }
-    setIsCalculatorOpen(false); // Ensure this closes the dialog
+    setIsCalculatorOpen(false); 
   };
 
 
@@ -707,7 +714,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
           </div>
           <Form {...form}>
             <form onSubmit={handleFormSubmit} className="flex-grow flex flex-col">
-              <div className="space-y-6"> {/* Wrapper for all form content */}
+              <div className="space-y-6 flex-grow flex flex-col"> 
                 <FormField
                   control={form.control}
                   name="category"
@@ -799,10 +806,10 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                                   <Calculator className="h-5 w-5" />
                               </Button>
                           </DialogTrigger>
-                           <DialogContent className="sm:max-w-xs p-0 border-0 shadow-lg">
-                              <DialogHeader className="sr-only">
-                                  <DialogTitle>Calculator</DialogTitle>
-                              </DialogHeader>
+                           <DialogContent className="sm:max-w-xs p-0 border-0 shadow-lg"> {/* Removed bg-transparent, calculator handles its bg */}
+                             <DialogHeader className="sr-only"> {/* Added for accessibility */}
+                                <DialogTitle>Calculator</DialogTitle>
+                             </DialogHeader>
                              <SimpleCalculator onSendValue={handleCalculatorValueSent} onClose={() => setIsCalculatorOpen(false)} />
                           </DialogContent>
                       </Dialog>
@@ -818,16 +825,22 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             >
                               <FormControl>
                                 <SelectTrigger
-                                  className={cn("rounded-l-none w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input")}
+                                  className={cn("rounded-l-none w-auto min-w-[80px] md:min-w-[180px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input")}
                                 >
-                                  {(() => {
-                                    const selectedUnitSymbol = field.value;
-                                    const selectedUnit = currentUnitsForCategory.find(u => u.symbol === selectedUnitSymbol);
-                                    if (selectedUnit) {
-                                      return <span>({selectedUnit.symbol})</span>;
-                                    }
-                                    return <SelectValue placeholder="Unit" />;
-                                  })()}
+                                  {field.value && currentUnitsForCategory.find(u => u.symbol === field.value) ? (
+                                    <>
+                                      {isMobile ? (
+                                        <span>({currentUnitsForCategory.find(u => u.symbol === field.value)!.symbol})</span>
+                                      ) : (
+                                        <span>
+                                          {currentUnitsForCategory.find(u => u.symbol === field.value)!.name}{' '}
+                                          ({currentUnitsForCategory.find(u => u.symbol === field.value)!.symbol})
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <SelectValue placeholder="Unit" />
+                                  )}
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent side="bottom" align="end" avoidCollisions={false} className="max-h-60 overflow-y-auto">
@@ -845,7 +858,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     </div>
 
                    {/* Middle Row - Swap and Favorite Buttons */}
-                    <div className="flex flex-row w-full gap-2 items-center">
+                   <div className="flex flex-row w-full gap-2 items-stretch"> {/* items-stretch added */}
                         <Button
                             type="button"
                             variant="ghost"
@@ -862,7 +875,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                         {onSaveFavoriteProp && (
                            <Button
                               type="button"
-                              variant="ghost"
+                              variant="ghost" 
                               onClick={handleSaveToFavoritesInternal}
                               disabled={finalSaveDisabled || showPlaceholder}
                               className="h-10 w-auto min-w-[80px] md:min-w-[100px] flex-shrink-0 group hover:bg-background focus-visible:ring-accent p-2"
@@ -909,17 +922,23 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                               <FormControl>
                                  <SelectTrigger className={cn(
                                    "rounded-l-none rounded-r-md",
-                                   "w-auto min-w-[80px] md:min-w-[100px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input border-l-0"
+                                   "w-auto min-w-[80px] md:min-w-[180px] h-10 text-left focus:z-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-input border-l-0"
                                   )}
                                  >
-                                  {(() => {
-                                    const selectedUnitSymbol = field.value;
-                                    const selectedUnit = currentUnitsForCategory.find(u => u.symbol === selectedUnitSymbol);
-                                    if (selectedUnit) {
-                                      return <span>({selectedUnit.symbol})</span>;
-                                    }
-                                    return <SelectValue placeholder="Unit" />;
-                                  })()}
+                                  {field.value && currentUnitsForCategory.find(u => u.symbol === field.value) ? (
+                                    <>
+                                      {isMobile ? (
+                                        <span>({currentUnitsForCategory.find(u => u.symbol === field.value)!.symbol})</span>
+                                      ) : (
+                                        <span>
+                                          {currentUnitsForCategory.find(u => u.symbol === field.value)!.name}{' '}
+                                          ({currentUnitsForCategory.find(u => u.symbol === field.value)!.symbol})
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <SelectValue placeholder="Unit" />
+                                  )}
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent side="bottom" align="end" avoidCollisions={false} className="max-h-60 overflow-y-auto">
@@ -950,7 +969,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                             variant="ghost"
                             size="icon"
                             onClick={handleCopyTextualResult}
-                            className="ml-2 h-7 w-7 p-1 text-purple-600 dark:text-purple-400 hover:bg-blue-200 dark:hover:bg-blue-800 shrink-0"
+                            className="ml-2 h-7 w-7 p-1 text-foreground/80 hover:bg-purple-600 dark:hover:bg-purple-700 hover:text-white shrink-0"
                             aria-label="Copy textual result to clipboard"
                         >
                             <Copy className="h-4 w-4" />
@@ -993,8 +1012,8 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                      </div>
                    </RadioGroup>
                 </fieldset>
-                </div> {/* End of space-y-6 wrapper */}
-              <div className="flex-grow"></div> {/* This pushes content above it to the top and itself to the bottom */}
+                <div className="flex-grow"></div>
+                </div> 
             </form>
           </Form>
         </CardContent>
