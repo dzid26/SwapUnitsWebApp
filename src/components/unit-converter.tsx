@@ -778,15 +778,15 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                     />
                   </div>
 
-                  {/* Middle Row - Now flex-col on all screens for consistency */}
-                   <div className="flex flex-col sm:flex-row w-full gap-2">
+                  {/* Middle Row - Now flex-row on all screens */}
+                   <div className="flex flex-row w-full gap-2 items-center">
                       <Button 
                         type="button"
                         variant="ghost"
                         onClick={handleSwapClick}
                         disabled={!rhfFromUnit || !rhfToUnit}
                         className={cn(
-                          "h-10 group hover:bg-primary flex-grow p-2 w-full" 
+                          "h-10 group hover:bg-primary flex-grow p-2" 
                         )}
                         aria-label="Swap from and to units"
                       >
@@ -795,10 +795,10 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
                       {onSaveFavoriteProp && (
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             onClick={handleSaveToFavoritesInternal}
                             disabled={finalSaveDisabled || showPlaceholder}
-                            className="h-10 w-full sm:w-auto sm:min-w-[80px] md:min-w-[100px] flex-shrink-0 group hover:border-accent hover:bg-background focus-visible:ring-accent p-2"
+                            className="h-10 w-auto min-w-[80px] md:min-w-[100px] flex-shrink-0 group hover:bg-background focus-visible:ring-accent p-2"
                             aria-label="Save conversion to favorites"
                         >
                             <Star className={cn("h-5 w-5", (!finalSaveDisabled && !showPlaceholder) ? "text-accent group-hover:fill-accent" : "text-muted-foreground/50")} />
@@ -873,7 +873,7 @@ export const UnitConverter = React.memo(forwardRef<UnitConverterHandle, UnitConv
               {/* Textual Conversion Result Display */}
               {!showPlaceholder && conversionResult && rhfCategory && rhfFromUnit && rhfToUnit && (
                 <div className="text-center py-2">
-                  <p className="text-purple-600 dark:text-purple-400 font-semibold text-lg">
+                  <p className="bg-sky-100 dark:bg-sky-700 text-purple-600 dark:text-purple-400 font-semibold text-lg p-3 rounded-md">
                     {`${formatFromValue(Number(rhfValue))} ${rhfFromUnit} equals ${formattedResultString} ${rhfToUnit}`}
                   </p>
                 </div>

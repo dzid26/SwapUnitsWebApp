@@ -159,9 +159,9 @@ export default function Home() {
     }
     const rounded = parseFloat(num.toFixed(3)); 
     if (rounded % 1 === 0) {
-      return rounded.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      return rounded.toLocaleString(undefined, { maximumFractionDigits: 0, style: 'decimal' });
     }
-    return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3, style: 'decimal' });
   };
 
   const handleCopyHistoryItemMobile = React.useCallback(async (item: ConversionHistoryItem) => {
@@ -196,7 +196,7 @@ export default function Home() {
       />
 
       <header className="sticky top-0 z-50 bg-background p-3 border-b flex items-center justify-between shadow-sm">
-        <div className="flex items-center w-1/3 md:hidden"> {/* Added md:hidden here */}
+        <div className="flex items-center w-1/3 md:hidden"> 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -245,7 +245,7 @@ export default function Home() {
                                   <UnitIcon category={item.category} className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
                                    <div className="flex-1 min-w-0">
                                       <p className="font-medium break-words"> 
-                                          {formatHistoryNumberMobile(item.fromValue)} ${item.fromUnit} → ${formatHistoryNumberMobile(item.toValue)} ${item.toUnit}
+                                          {formatHistoryNumberMobile(item.fromValue)} {item.fromUnit} → {formatHistoryNumberMobile(item.toValue)} {item.toUnit}
                                       </p>
                                       <p className="text-xs text-muted-foreground break-words"> 
                                           {item.category} - {format(new Date(item.timestamp), 'MMM d, p')}
