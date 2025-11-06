@@ -248,17 +248,17 @@ export default function Home() {
               </div>
             </section>
 
-            <div className="grid gap-7 lg:grid-cols-[minmax(260px,320px)_minmax(0,1.75fr)_minmax(260px,320px)] xl:grid-cols-[320px_minmax(0,1.4fr)_320px] 2xl:grid-cols-[360px_minmax(0,1.6fr)_360px]">
+            <div className="grid gap-7 lg:grid-cols-[minmax(260px,320px)_minmax(0,1.75fr)_minmax(260px,320px)] lg:items-stretch xl:grid-cols-[320px_minmax(0,1.4fr)_320px] 2xl:grid-cols-[360px_minmax(0,1.6fr)_360px]">
               <HistoryList
                 items={history}
                 onHistorySelect={onDesktopHistoryItemSelect}
                 onClearHistory={clearHistory}
-                className="hidden lg:flex lg:max-h-[680px] lg:flex-col xl:sticky xl:top-28"
+                className="hidden lg:flex lg:h-full lg:flex-col xl:sticky xl:top-28"
                 isLoading={isLoadingHistory}
               />
               <UnitConverter
                 ref={unitConverterRef}
-                className="min-h-[560px]"
+                className="min-h-[560px] lg:h-full"
                 onResultCopied={handleResultCopied}
                 onSaveFavorite={handleSaveFavorite}
                 disableAddFavoriteButton={disableAddFavoriteButton}
@@ -270,7 +270,7 @@ export default function Home() {
                 onFavoriteSelect={onDesktopPresetSelect}
                 onRemoveFavorite={removeFavorite}
                 onClearAllFavorites={clearAllFavorites}
-                className="hidden lg:flex lg:max-h-[680px] lg:flex-col xl:sticky xl:top-28"
+                className="hidden lg:flex lg:h-full lg:flex-col xl:sticky xl:top-28"
                 isLoadingFavorites={isLoadingFavorites}
               />
             </div>

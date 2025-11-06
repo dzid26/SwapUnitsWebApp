@@ -100,7 +100,7 @@ export function SiteTopbar({
                   </SheetTitle>
                 </SheetHeader>
 
-                <div className="space-y-6 px-5 pb-12 pt-5 text-sm">
+                <div className="space-y-6 px-5 pb-16 pt-5 text-sm">
                   <section className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2 font-semibold text-foreground">
@@ -154,7 +154,7 @@ export function SiteTopbar({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 shrink-0 self-start rounded-full text-muted-foreground opacity-0 transition invisible group-hover/history-item:visible group-hover/history-item:opacity-100 group-focus-within/history-item:visible group-focus-within/history-item:opacity-100 hover:bg-primary/10 hover:text-primary focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:opacity-100 focus-visible:visible"
+                              className="h-8 w-8 shrink-0 self-start rounded-full text-primary opacity-0 transition group-hover/history-item:opacity-100 group-focus-within/history-item:opacity-100 hover:bg-primary/10 focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:opacity-100"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onCopyHistoryItem?.(item);
@@ -207,9 +207,10 @@ export function SiteTopbar({
                             className="group/fav-item flex items-center gap-2 rounded-lg px-1 py-1 transition-colors"
                           >
                             <SheetClose asChild>
-                              <button
+                              <Button
                                 type="button"
-                                className="flex flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-foreground transition group-hover/fav-item:bg-primary/10 focus:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
+                                variant="ghost"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-semibold text-foreground transition hover:bg-primary/10 group-hover/fav-item:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
                                 onClick={() => onFavoriteSelect?.(fav)}
                               >
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -218,7 +219,7 @@ export function SiteTopbar({
                                 <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
                                   {displayLabel}
                                 </span>
-                              </button>
+                              </Button>
                             </SheetClose>
                             <Button
                               variant="ghost"
@@ -246,7 +247,7 @@ export function SiteTopbar({
                     {presets.length === 0 ? (
                       <p className="text-muted-foreground">No suggestions at the moment.</p>
                     ) : (
-                      <ul className="space-y-1.5 pb-6">
+                      <ul className="space-y-1.5 pb-10">
                         {presets.map((preset, index) => {
                           const trimmed = preset.name?.trim() ?? '';
                           const displayLabel =

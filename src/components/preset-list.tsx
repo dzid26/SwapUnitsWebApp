@@ -116,9 +116,10 @@ export const PresetList = React.memo(function PresetListComponent({
                                 return (
                                 <li key={fav.id} className="w-full">
                                     <div className="group/fav-item flex items-center gap-2 rounded-xl px-1 py-1 transition-colors">
-                                        <button
+                                        <Button
                                             type="button"
-                                            className="flex flex-1 items-center gap-3 rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-foreground transition group-hover/fav-item:bg-primary/10 focus:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
+                                            variant="ghost"
+                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-left text-sm font-semibold text-foreground transition hover:bg-primary/10 group-hover/fav-item:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
                                             onClick={() => onFavoriteSelect(fav)}
                                             aria-label={`Select favorite: ${displayLabel}`}
                                         >
@@ -128,7 +129,7 @@ export const PresetList = React.memo(function PresetListComponent({
                                             <span className="min-w-0 flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {displayLabel}
                                             </span>
-                                        </button>
+                                        </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
