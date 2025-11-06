@@ -54,6 +54,27 @@ export function SiteTopbar({
   onPresetSelect,
 }: SiteTopbarProps) {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const LABEL_CHAR_LIMIT = 30;
+
+  const formatFavoriteLabel = React.useCallback(
+    (fav: FavoriteItem) => {
+      const trimmed = fav.name?.trim() ?? '';
+      return trimmed.length > 0 && trimmed.length <= LABEL_CHAR_LIMIT
+        ? trimmed
+        : `${fav.fromUnit} → ${fav.toUnit}`;
+    },
+    [],
+  );
+
+  const formatPresetLabel = React.useCallback(
+    (preset: Preset) => {
+      const trimmed = preset.name?.trim() ?? '';
+      return trimmed.length > 0 && trimmed.length <= LABEL_CHAR_LIMIT
+        ? trimmed
+        : `${preset.fromUnit} → ${preset.toUnit}`;
+    },
+    [],
+  );
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/75">
@@ -79,7 +100,7 @@ export function SiteTopbar({
                   </SheetTitle>
                 </SheetHeader>
 
-                <div className="space-y-6 px-5 py-5 text-sm">
+                <div className="space-y-6 px-5 pb-12 pt-5 text-sm">
                   <section className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2 font-semibold text-foreground">
@@ -109,22 +130,22 @@ export function SiteTopbar({
                         {history.map((item) => (
                           <li
                             key={item.id}
-                            className="flex items-center justify-between gap-1 rounded-lg border border-border/60 bg-card px-3 py-2"
+                            className="group/history-item flex items-start gap-2 rounded-lg px-1 py-1 transition-colors"
                           >
                             <SheetClose asChild>
                               <Button
                                 variant="ghost"
-                                className="flex flex-1 items-start gap-2 rounded-lg bg-transparent p-0 text-left hover:bg-secondary/60"
+                                className="flex flex-1 items-start gap-3 rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-foreground transition group-hover/history-item:bg-primary/10 focus:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
                                 onClick={() => onHistorySelect?.(item)}
                               >
-                                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                  <UnitIcon category={item.category} className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                  <UnitIcon category={item.category} className="h-4 w-4" aria-hidden="true" />
                                 </span>
-                                <span className="min-w-0 flex-1">
-                                  <span className="block text-sm font-medium text-foreground">
+                                <span className="min-w-0 flex-1 space-y-1 whitespace-normal break-words">
+                                  <span className="block text-sm font-semibold leading-snug text-foreground">
                                     {item.fromValue.toLocaleString()} {item.fromUnit} → {item.toValue.toLocaleString()} {item.toUnit}
                                   </span>
-                                  <span className="block text-xs text-muted-foreground">
+                                  <span className="block text-xs leading-tight text-muted-foreground">
                                     {item.category} · {format(new Date(item.timestamp), 'MMM d, p')}
                                   </span>
                                 </span>
@@ -133,11 +154,12 @@ export function SiteTopbar({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary"
+                              className="h-8 w-8 shrink-0 self-start rounded-full text-muted-foreground opacity-0 transition invisible group-hover/history-item:visible group-hover/history-item:opacity-100 group-focus-within/history-item:visible group-focus-within/history-item:opacity-100 hover:bg-primary/10 hover:text-primary focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:opacity-100 focus-visible:visible"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onCopyHistoryItem?.(item);
                               }}
+                              aria-label={`Copy result ${item.fromValue} ${item.fromUnit} to ${item.toUnit}`}
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
@@ -173,36 +195,45 @@ export function SiteTopbar({
                       <p className="text-muted-foreground">Save a conversion to reuse it quickly.</p>
                     ) : (
                       <ul className="space-y-1.5">
-                        {favorites.map((fav) => (
+                        {favorites.map((fav) => {
+                          const trimmed = fav.name?.trim() ?? '';
+                          const displayLabel =
+                            trimmed.length > 0 && trimmed.length <= 30
+                              ? trimmed
+                              : `${fav.fromUnit} → ${fav.toUnit}`;
+                          return (
                           <li
                             key={fav.id}
-                            className="flex items-center justify-between gap-1 rounded-lg border border-border/60 bg-card px-3 py-2"
+                            className="group/fav-item flex items-center gap-2 rounded-lg px-1 py-1 transition-colors"
                           >
                             <SheetClose asChild>
-                              <Button
-                                variant="ghost"
-                                className="flex flex-1 items-center gap-2 rounded-lg bg-transparent p-0 text-left hover:bg-secondary/60"
+                              <button
+                                type="button"
+                                className="flex flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-foreground transition group-hover/fav-item:bg-primary/10 focus:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
                                 onClick={() => onFavoriteSelect?.(fav)}
                               >
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
                                   <UnitIcon category={fav.category} className="h-3.5 w-3.5" aria-hidden="true" />
                                 </span>
-                                <span className="flex-1 truncate text-sm font-medium text-foreground">{fav.name}</span>
-                              </Button>
+                                <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {displayLabel}
+                                </span>
+                              </button>
                             </SheetClose>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 rounded-full text-destructive hover:text-destructive"
+                              className="h-8 w-8 shrink-0 rounded-full text-muted-foreground opacity-0 transition invisible group-hover/fav-item:visible group-hover/fav-item:opacity-100 group-focus-within/fav-item:visible group-focus-within/fav-item:opacity-100 hover:bg-destructive hover:text-white focus-visible:bg-destructive focus-visible:text-white focus-visible:ring-2 focus-visible:ring-destructive/30 focus-visible:opacity-100 focus-visible:visible"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onRemoveFavorite?.(fav.id);
                               }}
+                              aria-label={`Remove favorite ${displayLabel}`}
                             >
                               <X className="h-4 w-4" />
                             </Button>
                           </li>
-                        ))}
+                        );})}
                       </ul>
                     )}
                   </section>
@@ -215,23 +246,31 @@ export function SiteTopbar({
                     {presets.length === 0 ? (
                       <p className="text-muted-foreground">No suggestions at the moment.</p>
                     ) : (
-                      <ul className="space-y-1.5">
-                        {presets.map((preset, index) => (
+                      <ul className="space-y-1.5 pb-6">
+                        {presets.map((preset, index) => {
+                          const trimmed = preset.name?.trim() ?? '';
+                          const displayLabel =
+                            trimmed.length > 0 && trimmed.length <= 30
+                              ? trimmed
+                              : `${preset.fromUnit} → ${preset.toUnit}`;
+                          return (
                           <li key={`${preset.category}-${preset.name}-${index}`}>
                             <SheetClose asChild>
                               <Button
                                 variant="ghost"
-                                className="flex w-full items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-left hover:bg-secondary/60"
+                                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-foreground transition hover:bg-primary/10"
                                 onClick={() => onPresetSelect?.(preset)}
                               >
                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
                                   <UnitIcon category={preset.category} className="h-3.5 w-3.5" aria-hidden="true" />
                                 </span>
-                                <span className="flex-1 text-sm font-medium text-foreground">{preset.name}</span>
+                                <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis font-semibold text-foreground">
+                                  {displayLabel}
+                                </span>
                               </Button>
                             </SheetClose>
                           </li>
-                        ))}
+                        );})}
                       </ul>
                     )}
                   </section>
