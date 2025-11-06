@@ -56,10 +56,18 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-   // Set the RefreshCw icon as the favicon using the data URI
-   icons: {
-     icon: '/favicon.ico',
-   },
+  // Set favicon and PWA icons to the SwapUnits refresh logo
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/swapunits-logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon.ico'],
+  },
+  manifest: '/site.webmanifest',
 };
 
 export const viewport = {

@@ -91,7 +91,10 @@ export function SiteTopbar({
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] border-r border-border/60 bg-background/95 p-0">
+            <SheetContent
+              side="left"
+              className="w-full max-w-[360px] border-r border-border/60 bg-background/95 p-0 sm:max-w-[400px]"
+            >
               <ScrollArea className="h-full">
                 <SheetHeader className="border-b border-border/60 px-5 py-4">
                   <SheetTitle className="flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -154,7 +157,7 @@ export function SiteTopbar({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 shrink-0 self-start rounded-full text-primary opacity-0 transition group-hover/history-item:opacity-100 group-focus-within/history-item:opacity-100 hover:bg-primary/10 focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:opacity-100"
+                              className="h-8 w-8 shrink-0 self-start rounded-full text-primary opacity-100 transition md:opacity-0 md:group-hover/history-item:opacity-100 md:group-focus-within/history-item:opacity-100 hover:bg-primary/10 focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/30"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onCopyHistoryItem?.(item);
@@ -224,7 +227,7 @@ export function SiteTopbar({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 shrink-0 rounded-full text-muted-foreground opacity-0 transition invisible group-hover/fav-item:visible group-hover/fav-item:opacity-100 group-focus-within/fav-item:visible group-focus-within/fav-item:opacity-100 hover:bg-destructive hover:text-white focus-visible:bg-destructive focus-visible:text-white focus-visible:ring-2 focus-visible:ring-destructive/30 focus-visible:opacity-100 focus-visible:visible"
+                              className="h-8 w-8 shrink-0 rounded-full text-muted-foreground opacity-100 visible transition md:opacity-0 md:invisible md:group-hover/fav-item:visible md:group-hover/fav-item:opacity-100 md:group-focus-within/fav-item:visible md:group-focus-within/fav-item:opacity-100 hover:bg-destructive hover:text-white focus-visible:bg-destructive focus-visible:text-white focus-visible:ring-2 focus-visible:ring-destructive/30"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onRemoveFavorite?.(fav.id);
@@ -286,7 +289,7 @@ export function SiteTopbar({
             className="group hidden items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-foreground md:flex"
             aria-label="Reset the unit converter to its initial state"
           >
-            <RefreshCw className="h-5 w-5 text-primary transition-transform duration-300 group-hover:-rotate-180" aria-hidden="true" />
+            <RefreshCw className="h-5 w-5 text-primary transition-transform duration-300 group-hover:rotate-180" aria-hidden="true" />
             <span className="font-semibold">SwapUnits</span>
           </Link>
         </div>
@@ -294,10 +297,10 @@ export function SiteTopbar({
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="flex items-center gap-2 rounded-full border border-border/60 bg-card px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-foreground transition hover:border-primary/60 hover:bg-card/90 lg:hidden"
+          className="group flex items-center gap-2 rounded-full border border-border/60 bg-card px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-foreground transition hover:border-primary/60 hover:bg-card/90 md:hidden"
           aria-label="Reset the unit converter to its initial state"
         >
-          <RefreshCw className="h-4 w-4 text-primary" aria-hidden="true" />
+          <RefreshCw className="h-4 w-4 text-primary transition-transform duration-300 group-hover:rotate-180" aria-hidden="true" />
           SwapUnits
         </Link>
 
