@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend('re_ZL838oju_FZu9u5ocKKxKCtytVDM5cbSm');
 
 export async function POST(request: Request) {
   try {
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
               </div>
             </div>
             <div class="content">
-              <h2 class="subject">� New Conversion Pair Request</h2>
+              <h2 class="subject"> New Conversion Pair Request</h2>
               <div class="content-section">
                 <h3 style="color: #555; margin: 0 0 10px 0;">Category</h3>
                 <div class="info-box">${category}</div>
